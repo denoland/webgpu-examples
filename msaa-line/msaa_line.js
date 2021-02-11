@@ -126,7 +126,7 @@ async function init(device, dimensions, sampleCount) {
     label: "Vertex Buffer",
     usage: 0x0020,
     contents: vertexData.buffer,
-  })
+  });
 
   const bundle = createBundle(
     device,
