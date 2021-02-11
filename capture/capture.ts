@@ -1,12 +1,22 @@
-import { copyToBuffer, createCapture, createPng } from "../utils.js";
+import {
+  copyToBuffer,
+  createCapture,
+  createPng,
+  Dimensions,
+} from "../utils.ts";
 
-const dimensions = {
-  height: 200,
+const dimensions: Dimensions = {
   width: 100,
+  height: 200,
 };
 
 const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter.requestDevice();
+const device = await adapter?.requestDevice();
+
+if (!device) {
+  console.error("no suitable adapter found");
+  Deno.exit(0);
+}
 
 const { texture, outputBuffer } = createCapture(device, dimensions);
 

@@ -3,9 +3,15 @@ import {
   createBufferInit,
   createCapture,
   createPng,
-} from "../utils.js";
+  Dimensions,
+} from "../utils.ts";
 
-async function init(device, dimensions, particles, particlesPerGroup) {
+async function init(
+  device: GPUDevice,
+  dimensions: Dimensions,
+  particles: number,
+  particlesPerGroup: number,
+): Promise<void> {
   const format = "rgba8unorm-srgb";
 
   const computeShader = device.createShaderModule({
@@ -201,15 +207,15 @@ async function init(device, dimensions, particles, particlesPerGroup) {
 
 let frameNum = 0;
 async function render(
-  device,
-  dimensions,
-  computePipeline,
-  particleBindGroups,
-  workGroupCount,
-  renderPipeline,
-  particleBuffers,
-  verticesBuffer,
-  particles,
+  device: GPUDevice,
+  dimensions: Dimensions,
+  computePipeline: GPUComputePipeline,
+  particleBindGroups: GPUBindGroup[],
+  workGroupCount: number,
+  renderPipeline: GPURenderPipeline,
+  particleBuffers: GPUBuffer[],
+  verticesBuffer: GPUBuffer,
+  particles: number,
 ) {
   const { texture, outputBuffer } = createCapture(device, dimensions);
 
@@ -249,11 +255,15 @@ async function render(
 }
 
 const dimensions = {
-  height: 1200,
   width: 1600,
+  height: 1200,
 };
 
 const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter.requestDevice();
+const device = await adapter?.requestDevice();
 
-await init(device, dimensions, 1500, 64);
+if (!device) {
+  console.error("no suitable adapter found");
+} else {
+  await init(device, dimensions, 1500, 64);
+}

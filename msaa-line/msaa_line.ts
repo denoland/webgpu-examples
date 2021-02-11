@@ -2,18 +2,18 @@ import {
   copyToBuffer,
   createBufferInit,
   createCapture,
-  createPng,
-} from "../utils.js";
+  createPng, Dimensions,
+} from "../utils.ts";
 
 function createBundle(
-  device,
-  format,
-  shader,
-  pipelineLayout,
-  sampleCount,
-  vertexBuffer,
-  vertexCount,
-) {
+  device: GPUDevice,
+  format: GPUTextureFormat,
+  shader: GPUShaderModule,
+  pipelineLayout: GPUPipelineLayout,
+  sampleCount: number,
+  vertexBuffer: GPUBuffer,
+  vertexCount: number,
+): GPURenderBundle {
   const renderPipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
@@ -66,7 +66,7 @@ function createBundle(
   return encoder.finish();
 }
 
-async function init(device, dimensions, sampleCount) {
+async function init(device: GPUDevice, dimensions: Dimensions, sampleCount: number): Promise<void> {
   const format = "rgba8unorm-srgb";
 
   const shader = device.createShaderModule({
@@ -107,21 +107,6 @@ async function init(device, dimensions, sampleCount) {
     vertexData[i + 11] = 1; // a
   }
 
-  /*
-  const unpaddedSize = vertexData.byteLength;
-  const padding = 4 - unpaddedSize % 4;
-  const paddedSize = padding + unpaddedSize;
-
-  const vertexBuffer = device.createBuffer({
-    label: "Vertex Buffer",
-    usage: 0x0020,
-    mappedAtCreation: true,
-    size: paddedSize,
-  });
-  const data = new Float32Array(vertexBuffer.getMappedRange());
-  data.set(vertexData);
-  vertexBuffer.unmap();
-  */
   const vertexBuffer = createBufferInit(device, {
     label: "Vertex Buffer",
     usage: 0x0020,
@@ -141,7 +126,7 @@ async function init(device, dimensions, sampleCount) {
   await render(device, dimensions, multisampledBuffer, bundle);
 }
 
-async function render(device, dimensions, multisampledBuffer, bundle) {
+async function render(device: GPUDevice, dimensions: Dimensions, multisampledBuffer: GPUTextureView, bundle: GPURenderBundle): Promise<void> {
   const { texture, outputBuffer } = createCapture(device, dimensions);
 
   const encoder = device.createCommandEncoder();
@@ -165,12 +150,16 @@ async function render(device, dimensions, multisampledBuffer, bundle) {
   await createPng("./msaa_line.png", outputBuffer, dimensions);
 }
 
-const dimensions = {
-  height: 1200,
+const dimensions: Dimensions = {
   width: 1600,
+  height: 1200,
 };
 
 const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter.requestDevice();
+const device = await adapter?.requestDevice();
 
-await init(device, dimensions, 4);
+if (!device) {
+  console.error("no suitable adapter found");
+} else {
+  await init(device, dimensions, 4);
+}

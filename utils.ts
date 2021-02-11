@@ -1,7 +1,17 @@
 import { printImageString } from "https://x.nest.land/terminal_images@2.1.2/mod.ts";
 import pngjs from "https://jspm.dev/pngjs";
 
-function getRowPadding(width) {
+export interface Dimensions {
+  width: number;
+  height: number;
+}
+
+interface Padding {
+  unpadded: number;
+  padded: number;
+}
+
+function getRowPadding(width: number): Padding {
   // It is a webgpu requirement that BufferCopyView.layout.bytes_per_row % COPY_BYTES_PER_ROW_ALIGNMENT(256) == 0
   // So we calculate padded_bytes_per_row by rounding unpadded_bytes_per_row
   // up to the next multiple of COPY_BYTES_PER_ROW_ALIGNMENT.
@@ -19,7 +29,15 @@ function getRowPadding(width) {
   };
 }
 
-export function createCapture(device, dimensions) {
+interface CreateCapture {
+  outputBuffer: GPUBuffer;
+  texture: GPUTexture;
+}
+
+export function createCapture(
+  device: GPUDevice,
+  dimensions: Dimensions,
+): CreateCapture {
   const { padded } = getRowPadding(dimensions.width);
   const outputBuffer = device.createBuffer({
     size: padded * dimensions.height,
@@ -34,7 +52,12 @@ export function createCapture(device, dimensions) {
   return { outputBuffer, texture };
 }
 
-export function copyToBuffer(encoder, texture, outputBuffer, dimensions) {
+export function copyToBuffer(
+  encoder: GPUCommandEncoder,
+  texture: GPUTexture,
+  outputBuffer: GPUBuffer,
+  dimensions: Dimensions,
+): void {
   const { padded } = getRowPadding(dimensions.width);
 
   encoder.copyTextureToBuffer(
@@ -50,25 +73,27 @@ export function copyToBuffer(encoder, texture, outputBuffer, dimensions) {
   );
 }
 
-export async function createPng(path, buffer, dimensions) {
+/** If path is undefined, thee buffer will be rendered to the terminal */
+export async function createPng(
+  path: string | undefined,
+  buffer: GPUBuffer,
+  dimensions: Dimensions,
+): Promise<void> {
   await buffer.mapAsync(1);
   const inputBuffer = new Uint8Array(buffer.getMappedRange());
   const { padded, unpadded } = getRowPadding(dimensions.width);
   const outputBuffer = new Uint8Array(unpadded * dimensions.height);
-  //const encoder = new TextEncoder();
 
   for (let i = 0; i < dimensions.height; i++) {
     const slice = inputBuffer
       .slice(i * padded, (i + 1) * padded)
       .slice(0, unpadded);
-    /*for (const byte of slice) {
-      Deno.stdout.writeSync(encoder.encode(byte + ", "));
-    }*/
 
     outputBuffer.set(slice, i * unpadded);
   }
 
   if (path) {
+    // @ts-ignore
     const png = new pngjs.PNG({
       ...dimensions,
       bitDepth: 8,
@@ -77,8 +102,8 @@ export async function createPng(path, buffer, dimensions) {
       inputHasAlpha: true,
     });
     png.data = outputBuffer;
-    const x = pngjs.PNG.sync.write(png);
-    await Deno.writeFile(path, x);
+    // @ts-ignore
+    await Deno.writeFile(path, pngjs.PNG.sync.write(png));
   } else {
     printImageString({
       rawPixels: {
@@ -92,7 +117,16 @@ export async function createPng(path, buffer, dimensions) {
   buffer.unmap();
 }
 
-export function createBufferInit(device, descriptor) {
+interface BufferInit {
+  contents: ArrayBuffer;
+  label?: string;
+  usage: number;
+}
+
+export function createBufferInit(
+  device: GPUDevice,
+  descriptor: BufferInit,
+): GPUBuffer {
   const contents = new Uint8Array(descriptor.contents);
 
   const unpaddedSize = contents.byteLength;
