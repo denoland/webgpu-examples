@@ -2,7 +2,8 @@ import {
   copyToBuffer,
   createBufferInit,
   createCapture,
-  createPng, Dimensions,
+  createPng,
+  Dimensions,
 } from "../utils.ts";
 
 function createBundle(
@@ -66,7 +67,11 @@ function createBundle(
   return encoder.finish();
 }
 
-async function init(device: GPUDevice, dimensions: Dimensions, sampleCount: number): Promise<void> {
+async function init(
+  device: GPUDevice,
+  dimensions: Dimensions,
+  sampleCount: number,
+): Promise<void> {
   const format = "rgba8unorm-srgb";
 
   const shader = device.createShaderModule({
@@ -126,7 +131,12 @@ async function init(device: GPUDevice, dimensions: Dimensions, sampleCount: numb
   await render(device, dimensions, multisampledBuffer, bundle);
 }
 
-async function render(device: GPUDevice, dimensions: Dimensions, multisampledBuffer: GPUTextureView, bundle: GPURenderBundle): Promise<void> {
+async function render(
+  device: GPUDevice,
+  dimensions: Dimensions,
+  multisampledBuffer: GPUTextureView,
+  bundle: GPURenderBundle,
+): Promise<void> {
   const { texture, outputBuffer } = createCapture(device, dimensions);
 
   const encoder = device.createCommandEncoder();
