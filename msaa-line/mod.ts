@@ -2,7 +2,7 @@ import {
   copyToBuffer,
   createBufferInit,
   createCapture,
-  createPng,
+  createImage,
   Dimensions,
 } from "../utils.ts";
 
@@ -93,7 +93,7 @@ async function render(
 
   device.queue.submit([encoder.finish()]);
 
-  await createPng("./msaa_line.png", outputBuffer, dimensions);
+  await createImage(outputBuffer, dimensions);
 }
 
 const dimensions: Dimensions = {

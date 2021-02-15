@@ -1,4 +1,3 @@
-// This should match `NUM_PARTICLES` on the Rust side.
 const NUM_PARTICLES: u32 = 1500;
 
 [[block]]

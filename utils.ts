@@ -1,5 +1,4 @@
-import { printImageString } from "https://x.nest.land/terminal_images@2.1.2/mod.ts";
-import pngjs from "https://jspm.dev/pngjs";
+import { JPEG, printImageString } from "./deps.ts";
 
 export interface Dimensions {
   width: number;
@@ -30,8 +29,8 @@ function getRowPadding(width: number): Padding {
 }
 
 interface CreateCapture {
-  outputBuffer: GPUBuffer;
   texture: GPUTexture;
+  outputBuffer: GPUBuffer;
 }
 
 export function createCapture(
@@ -74,10 +73,10 @@ export function copyToBuffer(
 }
 
 /** If path is undefined, thee buffer will be rendered to the terminal */
-export async function createPng(
-  path: string | undefined,
+export async function createImage(
   buffer: GPUBuffer,
   dimensions: Dimensions,
+  terminal?: boolean,
 ): Promise<void> {
   await buffer.mapAsync(1);
   const inputBuffer = new Uint8Array(buffer.getMappedRange());
@@ -92,19 +91,7 @@ export async function createPng(
     outputBuffer.set(slice, i * unpadded);
   }
 
-  if (path) {
-    // @ts-ignore
-    const png = new pngjs.PNG({
-      ...dimensions,
-      bitDepth: 8,
-      colorType: 6,
-      inputColorType: 6,
-      inputHasAlpha: true,
-    });
-    png.data = outputBuffer;
-    // @ts-ignore
-    await Deno.writeFile(path, pngjs.PNG.sync.write(png));
-  } else {
+  if (terminal) {
     printImageString({
       rawPixels: {
         data: outputBuffer,
@@ -112,15 +99,21 @@ export async function createPng(
       },
       color: true,
     });
+  } else {
+    const jpg = JPEG.encode({
+      ...dimensions,
+      data: outputBuffer,
+    }, 100);
+    await Deno.writeFile("./output.jpg", jpg.data);
   }
 
   buffer.unmap();
 }
 
 interface BufferInit {
-  contents: ArrayBuffer;
   label?: string;
   usage: number;
+  contents: ArrayBuffer;
 }
 
 export function createBufferInit(

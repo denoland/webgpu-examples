@@ -2,7 +2,7 @@ import {
   copyToBuffer,
   createBufferInit,
   createCapture,
-  createPng,
+  createImage,
   Dimensions,
 } from "../utils.ts";
 
@@ -52,14 +52,14 @@ async function render(
 
   device.queue.submit([encoder.finish()]);
 
-  await createPng("./boids.png", outputBuffer, dimensions);
+  await createImage(outputBuffer, dimensions);
 }
 
 const dimensions: Dimensions = {
   width: 1600,
   height: 1200,
 };
-const particles = 1500;
+const particles = 1500; // This should match NUM_PARTICLES in the compute shader.
 const particlesPerGroup = 64;
 
 const adapter = await navigator.gpu.requestAdapter();
