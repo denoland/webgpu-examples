@@ -48,43 +48,14 @@ function createVertices(): {
     ...vertex([1, -1, -1], [0, 1]),
   ]);
 
+  // deno-fmt-ignore
   const indexData = new Uint16Array([
-    0,
-    1,
-    2,
-    2,
-    3,
-    0, // top
-    4,
-    5,
-    6,
-    6,
-    7,
-    4, // bottom
-    8,
-    9,
-    10,
-    10,
-    11,
-    8, // right
-    12,
-    13,
-    14,
-    14,
-    15,
-    12, // left
-    16,
-    17,
-    18,
-    18,
-    19,
-    16, // front
-    20,
-    21,
-    22,
-    22,
-    23,
-    20, // back
+    0, 1, 2, 2, 3, 0, // top
+    4, 5, 6, 6, 7, 4, // bottom
+    8, 9, 10, 10, 11, 8, // right
+    12, 13, 14, 14, 15, 12, // left
+    16, 17, 18, 18, 19, 16, // front
+    20, 21, 22, 22, 23, 20, // back
   ]);
 
   return { vertexData, indexData };
@@ -129,23 +100,12 @@ function generateMatrix(aspectRatio: number): Float32Array {
     new cgmath.Vector3(0, 0, 0),
     cgmath.Vector3.forward,
   );
+  // deno-fmt-ignore
   const mxCorrection = cgmath.Matrix4.fromCols(
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.5,
-    0.0,
-    0.0,
-    0.0,
-    0.5,
-    1.0,
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.0, 0.0, 0.5, 1.0,
   );
   return mxCorrection.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
