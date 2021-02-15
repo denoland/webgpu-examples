@@ -8,7 +8,6 @@ import {
 
 function createBundle(
   device: GPUDevice,
-  format: GPUTextureFormat,
   shader: GPUShaderModule,
   pipelineLayout: GPUPipelineLayout,
   sampleCount: number,
@@ -43,7 +42,7 @@ function createBundle(
       entryPoint: "fs_main",
       targets: [
         {
-          format,
+          format: "rgba8unorm-srgb",
         },
       ],
     },
@@ -57,7 +56,7 @@ function createBundle(
 
   const encoder = device.createRenderBundleEncoder({
     colorFormats: [
-      format,
+      "rgba8unorm-srgb",
     ],
     sampleCount,
   });
@@ -110,8 +109,6 @@ if (!device) {
   Deno.exit(0);
 }
 
-const format = "rgba8unorm-srgb";
-
 const shader = device.createShaderModule({
   code: await Deno.readTextFile("./shader.wgsl"),
 });
@@ -123,7 +120,7 @@ const pipelineLayout = device.createPipelineLayout({
 const multisampledBuffer = device.createTexture({
   size: dimensions,
   sampleCount,
-  format,
+  format: "rgba8unorm-srgb",
   usage: 0x10,
 }).createView();
 
@@ -158,7 +155,6 @@ const vertexBuffer = createBufferInit(device, {
 
 const bundle = createBundle(
   device,
-  format,
   shader,
   pipelineLayout,
   sampleCount,

@@ -155,9 +155,7 @@ const dimensions: Dimensions = {
 };
 
 const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter?.requestDevice({
-  nonGuaranteedFeatures: ["non-fill-polygon-mode"],
-});
+const device = await adapter?.requestDevice();
 
 if (!device) {
   console.error("no suitable adapter found");
