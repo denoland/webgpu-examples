@@ -168,9 +168,7 @@ const dimensions: Dimensions = {
 const mipLevelCount = 9;
 
 const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter?.requestDevice({
-  //nonGuaranteedFeatures: ["timestamp-query", "pipeline-statistics-query"],
-});
+const device = await adapter?.requestDevice();
 
 if (!device) {
   console.error("no suitable adapter found");

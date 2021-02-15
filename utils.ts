@@ -1,4 +1,4 @@
-import { gmath, JPEG, printImageString } from "./deps.ts";
+import { gmath, png, printImageString } from "./deps.ts";
 
 export interface Dimensions {
   width: number;
@@ -100,11 +100,16 @@ export async function createImage(
       color: true,
     });
   } else {
-    const jpg = JPEG.encode({
-      ...dimensions,
-      data: outputBuffer,
-    }, 100);
-    await Deno.writeFile("./output.jpg", jpg.data);
+    const image = png.encode(
+      outputBuffer,
+      dimensions.width,
+      dimensions.height,
+      {
+        stripAlpha: true,
+        color: 2,
+      },
+    );
+    await Deno.writeFile("./output.png", image);
   }
 
   buffer.unmap();
