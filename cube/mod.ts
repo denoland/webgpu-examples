@@ -1,10 +1,11 @@
-import { cgmath } from "../deps.ts";
+import { gmath } from "../deps.ts";
 import {
   copyToBuffer,
   createBufferInit,
   createCapture,
   createImage,
   Dimensions,
+  OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
 
 function vertex(pos: [number, number, number], tc: [number, number]): number[] {
@@ -89,25 +90,18 @@ function createTexels(size: number): Uint8Array {
 }
 
 function generateMatrix(aspectRatio: number): Float32Array {
-  const mxProjection = new cgmath.PerspectiveFov(
-    new cgmath.Deg(45),
+  const mxProjection = new gmath.PerspectiveFov(
+    new gmath.Deg(45),
     aspectRatio,
     1,
     1000,
   ).toPerspective().toMatrix4();
-  const mxView = cgmath.Matrix4.lookAtRh(
-    new cgmath.Vector3(1.5, -5, 3),
-    new cgmath.Vector3(0, 0, 0),
-    cgmath.Vector3.forward,
+  const mxView = gmath.Matrix4.lookAtRh(
+    new gmath.Vector3(1.5, -5, 3),
+    new gmath.Vector3(0, 0, 0),
+    gmath.Vector3.forward,
   );
-  // deno-fmt-ignore
-  const mxCorrection = cgmath.Matrix4.fromCols(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-  );
-  return mxCorrection.mul(mxProjection.mul(mxView)).toFloat32Array();
+  return OPENGL_TO_WGPU_MATRIX.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
 
 async function render(

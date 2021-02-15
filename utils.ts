@@ -1,4 +1,4 @@
-import { JPEG, printImageString } from "./deps.ts";
+import { gmath, JPEG, printImageString } from "./deps.ts";
 
 export interface Dimensions {
   width: number;
@@ -137,3 +137,11 @@ export function createBufferInit(
   buffer.unmap();
   return buffer;
 }
+
+// deno-fmt-ignore
+export const OPENGL_TO_WGPU_MATRIX = gmath.Matrix4.fromCols(
+  1.0, 0.0, 0.0, 0.0,
+  0.0, 1.0, 0.0, 0.0,
+  0.0, 0.0, 0.5, 0.0,
+  0.0, 0.0, 0.5, 1.0,
+);
