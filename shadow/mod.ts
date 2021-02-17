@@ -231,8 +231,8 @@ async function render(device: GPUDevice, dimensions: Dimensions, entities: Entit
 }
 
 const dimensions: Dimensions = {
-  width: 1600,
-  height: 1200,
+  width: 800,
+  height: 600,
 };
 const maxLights = 10;
 const shadowSize: GPUExtent3D = {
@@ -373,7 +373,7 @@ for (let i = 0; i < cubeDescs.length; i++) {
     vertexBuffer: cubeVertexBuffer,
     indexBuffer: cubeIndexBuffer,
     indexFormat: "uint16",
-    indexCount: cubeIndexData.byteLength,
+    indexCount: cubeIndexData.length,
     uniformOffset: (i + 1) * 256,
   });
 }
@@ -415,7 +415,7 @@ const shadowTexture = device.createTexture({
   usage: 0x10 | 4,
 });
 const shadowView = shadowTexture.createView();
-const shadowTargetViews: GPUTextureView[] = [0, 1, 2].map((i) => {
+const shadowTargetViews: GPUTextureView[] = [0, 1].map((i) => {
   return shadowTexture.createView({
     label: "shadow",
     dimension: "2d",
