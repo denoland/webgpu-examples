@@ -159,7 +159,8 @@ async function render(
     if (entity.rotationSpeed != 0) {
       const rotation = gmath.Matrix4.fromAngleX(
         new gmath.Deg(entity.rotationSpeed),
-      );      entity.mxWorld = entity.mxWorld.mul(rotation);
+      );
+      entity.mxWorld = entity.mxWorld.mul(rotation);
     }
     const data = new Float32Array([
       ...entity.mxWorld.toFloat32Array().slice(),
@@ -345,15 +346,9 @@ const entityUniformBuffer = device.createBuffer({
   usage: 0x40 | 8,
 });
 
-// deno-fmt-ignore
 const entities: Entity[] = [
   {
-    mxWorld: gmath.Matrix4.fromCols(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1,
-    ),
+    mxWorld: gmath.Matrix4.identity(),
     rotationSpeed: 0,
     color: [1, 1, 1, 1],
     vertexBuffer: planeVertexBuffer,
