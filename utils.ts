@@ -72,11 +72,9 @@ export function copyToBuffer(
   );
 }
 
-/** If path is undefined, thee buffer will be rendered to the terminal */
 export async function createImage(
   buffer: GPUBuffer,
   dimensions: Dimensions,
-  terminal?: boolean,
 ): Promise<void> {
   await buffer.mapAsync(1);
   const inputBuffer = new Uint8Array(buffer.getMappedRange());
@@ -91,26 +89,16 @@ export async function createImage(
     outputBuffer.set(slice, i * unpadded);
   }
 
-  if (terminal) {
-    printImageString({
-      rawPixels: {
-        data: outputBuffer,
-        ...dimensions,
-      },
-      color: true,
-    });
-  } else {
-    const image = png.encode(
-      outputBuffer,
-      dimensions.width,
-      dimensions.height,
-      {
-        stripAlpha: true,
-        color: 2,
-      },
-    );
-    await Deno.writeFile("./output.png", image);
-  }
+  const image = png.encode(
+    outputBuffer,
+    dimensions.width,
+    dimensions.height,
+    {
+      stripAlpha: true,
+      color: 2,
+    },
+  );
+  await Deno.writeFile("./output.png", image);
 
   buffer.unmap();
 }
