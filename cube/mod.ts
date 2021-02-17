@@ -1,12 +1,6 @@
 import { gmath } from "../deps.ts";
-import {
-  copyToBuffer,
-  createBufferInit,
-  createCapture,
-  createImage,
-  Dimensions,
-  OPENGL_TO_WGPU_MATRIX,
-} from "../utils.ts";
+import { Framework } from "../framework.ts";
+import { createBufferInit, OPENGL_TO_WGPU_MATRIX } from "../utils.ts";
 
 function vertex(pos: [number, number, number], tc: [number, number]): number[] {
   return [...pos, 1, ...tc];
@@ -104,202 +98,181 @@ function generateMatrix(aspectRatio: number): Float32Array {
   return OPENGL_TO_WGPU_MATRIX.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
 
-async function render(
-  device: GPUDevice,
-  dimensions: Dimensions,
-  pipeline: GPURenderPipeline,
-  bindGroup: GPUBindGroup,
-  indexBuffer: GPUBuffer,
-  vertexBuffer: GPUBuffer,
-  indexCount: number,
-) {
-  const { texture, outputBuffer } = createCapture(device, dimensions);
+class Cube extends Framework {
+  pipeline!: GPURenderPipeline;
+  bindGroup!: GPUBindGroup;
+  indexBuffer!: GPUBuffer;
+  vertexBuffer!: GPUBuffer;
+  indexCount!: number;
 
-  const encoder = device.createCommandEncoder();
-  const renderPass = encoder.beginRenderPass({
-    colorAttachments: [
+  async run(): Promise<any> {
+    const { vertexData, indexData } = createVertices();
+    this.indexCount = indexData.length;
+
+    this.vertexBuffer = createBufferInit(this.device, {
+      label: "Vertex Buffer",
+      usage: 0x20,
+      contents: vertexData.buffer,
+    });
+
+    this.indexBuffer = createBufferInit(this.device, {
+      label: "Index Buffer",
+      usage: 0x10,
+      contents: indexData.buffer,
+    });
+
+    const bindGroupLayout = this.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: 1,
+          buffer: {
+            minBindingSize: 64,
+          },
+        },
+        {
+          binding: 1,
+          visibility: 2,
+          texture: {},
+        },
+        {
+          binding: 2,
+          visibility: 2,
+          sampler: {},
+        },
+      ],
+    });
+
+    const pipelineLayout = this.device.createPipelineLayout({
+      bindGroupLayouts: [bindGroupLayout],
+    });
+
+    const size = 256;
+    const texels = createTexels(size);
+    const textureExtent = {
+      width: size,
+      height: size,
+    };
+
+    const texture = this.device.createTexture({
+      size: textureExtent,
+      format: "rgba8unorm-srgb",
+      usage: 4 | 2,
+    });
+    const textureView = texture.createView();
+    this.device.queue.writeTexture(
       {
-        view: texture.createView(),
-        storeOp: "store",
-        loadValue: [0.1, 0.2, 0.3, 1],
+        texture,
       },
-    ],
-  });
+      texels,
+      {
+        bytesPerRow: 4 * size,
+        rowsPerImage: 0,
+      },
+      textureExtent,
+    );
 
-  renderPass.pushDebugGroup("Prepare data for draw.");
-  renderPass.setPipeline(pipeline);
-  renderPass.setBindGroup(0, bindGroup);
-  renderPass.setIndexBuffer(indexBuffer, "uint16");
-  renderPass.setVertexBuffer(0, vertexBuffer);
-  renderPass.popDebugGroup();
-  renderPass.insertDebugMarker("Draw!");
-  renderPass.drawIndexed(indexCount, 1);
-  renderPass.endPass();
+    const sampler = this.device.createSampler({
+      minFilter: "linear",
+    });
 
-  copyToBuffer(encoder, texture, outputBuffer, dimensions);
+    const mxTotal = generateMatrix(
+      this.dimensions.width / this.dimensions.height,
+    );
+    const uniformBuffer = createBufferInit(this.device, {
+      label: "Uniform Buffer",
+      usage: 0x40 | 8,
+      contents: mxTotal.buffer,
+    });
 
-  device.queue.submit([encoder.finish()]);
+    this.bindGroup = this.device.createBindGroup({
+      layout: bindGroupLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: {
+            buffer: uniformBuffer,
+          },
+        },
+        {
+          binding: 1,
+          resource: textureView,
+        },
+        {
+          binding: 2,
+          resource: sampler,
+        },
+      ],
+    });
 
-  await createImage(outputBuffer, dimensions);
+    const shader = this.device.createShaderModule({
+      code: await Deno.readTextFile("./shader.wgsl"),
+    });
+    const vertexBuffers: GPUVertexBufferLayout[] = [
+      {
+        arrayStride: 6 * 4,
+        attributes: [
+          {
+            format: "float4",
+            offset: 0,
+            shaderLocation: 0,
+          },
+          {
+            format: "float2",
+            offset: 4 * 4,
+            shaderLocation: 1,
+          },
+        ],
+      },
+    ];
+
+    this.pipeline = this.device.createRenderPipeline({
+      layout: pipelineLayout,
+      vertex: {
+        module: shader,
+        entryPoint: "vs_main",
+        buffers: vertexBuffers,
+      },
+      fragment: {
+        module: shader,
+        entryPoint: "fs_main",
+        targets: [
+          {
+            format: "rgba8unorm-srgb",
+          },
+        ],
+      },
+      primitive: {
+        cullMode: "back",
+      },
+    });
+  }
+
+  render(encoder: GPUCommandEncoder, view: GPUTextureView) {
+    const renderPass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: view,
+          storeOp: "store",
+          loadValue: [0.1, 0.2, 0.3, 1],
+        },
+      ],
+    });
+
+    renderPass.pushDebugGroup("Prepare data for draw.");
+    renderPass.setPipeline(this.pipeline);
+    renderPass.setBindGroup(0, this.bindGroup);
+    renderPass.setIndexBuffer(this.indexBuffer, "uint16");
+    renderPass.setVertexBuffer(0, this.vertexBuffer);
+    renderPass.popDebugGroup();
+    renderPass.insertDebugMarker("Draw!");
+    renderPass.drawIndexed(this.indexCount, 1);
+    renderPass.endPass();
+  }
 }
 
-const dimensions: Dimensions = {
+const cube = new Cube({
   width: 1600,
   height: 1200,
-};
-
-const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter?.requestDevice();
-
-if (!device) {
-  console.error("no suitable adapter found");
-  Deno.exit(0);
-}
-
-const { vertexData, indexData } = createVertices();
-
-const vertexBuffer = createBufferInit(device, {
-  label: "Vertex Buffer",
-  usage: 0x20,
-  contents: vertexData.buffer,
-});
-
-const indexBuffer = createBufferInit(device, {
-  label: "Index Buffer",
-  usage: 0x10,
-  contents: indexData.buffer,
-});
-
-const bindGroupLayout = device.createBindGroupLayout({
-  entries: [
-    {
-      binding: 0,
-      visibility: 1,
-      buffer: {
-        minBindingSize: 64,
-      },
-    },
-    {
-      binding: 1,
-      visibility: 2,
-      texture: {},
-    },
-    {
-      binding: 2,
-      visibility: 2,
-      sampler: {},
-    },
-  ],
-});
-
-const pipelineLayout = device.createPipelineLayout({
-  bindGroupLayouts: [bindGroupLayout],
-});
-
-const size = 256;
-const texels = createTexels(size);
-const textureExtent = {
-  width: size,
-  height: size,
-};
-
-const texture = device.createTexture({
-  size: textureExtent,
-  format: "rgba8unorm-srgb",
-  usage: 4 | 2,
-});
-const textureView = texture.createView();
-device.queue.writeTexture(
-  {
-    texture,
-  },
-  texels,
-  {
-    bytesPerRow: 4 * size,
-    rowsPerImage: 0,
-  },
-  textureExtent,
-);
-
-const sampler = device.createSampler({
-  minFilter: "linear",
-});
-
-const mxTotal = generateMatrix(dimensions.width / dimensions.height);
-const uniformBuffer = createBufferInit(device, {
-  label: "Uniform Buffer",
-  usage: 0x40 | 8,
-  contents: mxTotal.buffer,
-});
-
-const bindGroup = device.createBindGroup({
-  layout: bindGroupLayout,
-  entries: [
-    {
-      binding: 0,
-      resource: {
-        buffer: uniformBuffer,
-      },
-    },
-    {
-      binding: 1,
-      resource: textureView,
-    },
-    {
-      binding: 2,
-      resource: sampler,
-    },
-  ],
-});
-
-const shader = device.createShaderModule({
-  code: await Deno.readTextFile("./shader.wgsl"),
-});
-const vertexBuffers: GPUVertexBufferLayout[] = [
-  {
-    arrayStride: 6 * 4,
-    attributes: [
-      {
-        format: "float4",
-        offset: 0,
-        shaderLocation: 0,
-      },
-      {
-        format: "float2",
-        offset: 4 * 4,
-        shaderLocation: 1,
-      },
-    ],
-  },
-];
-
-const pipeline = device.createRenderPipeline({
-  layout: pipelineLayout,
-  vertex: {
-    module: shader,
-    entryPoint: "vs_main",
-    buffers: vertexBuffers,
-  },
-  fragment: {
-    module: shader,
-    entryPoint: "fs_main",
-    targets: [
-      {
-        format: "rgba8unorm-srgb",
-      },
-    ],
-  },
-  primitive: {
-    cullMode: "back",
-  },
-});
-
-await render(
-  device,
-  dimensions,
-  pipeline,
-  bindGroup,
-  indexBuffer,
-  vertexBuffer,
-  indexData.length,
-);
+}, await Cube.getDevice());
+await cube.renderImage();

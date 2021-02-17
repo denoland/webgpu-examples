@@ -1,9 +1,7 @@
+import { Framework } from "../framework.ts";
 import { gmath } from "../deps.ts";
 import {
-  copyToBuffer,
   createBufferInit,
-  createCapture,
-  createImage,
   Dimensions,
   OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
@@ -58,238 +56,232 @@ function generateMatrix(aspectRatio: number): Float32Array {
   return OPENGL_TO_WGPU_MATRIX.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
 
-async function generateMipmaps(
-  encoder: GPUCommandEncoder,
-  device: GPUDevice,
-  texture: GPUTexture,
-  mipCount: number,
-) {
-  const shader = device.createShaderModule({
-    code: await Deno.readTextFile("blit.wgsl"),
-  });
-  const pipeline = device.createRenderPipeline({
-    label: "blit",
-    vertex: {
-      module: shader,
-      entryPoint: "vs_main",
-    },
-    fragment: {
-      module: shader,
-      entryPoint: "fs_main",
-      targets: [{
-        format: "rgba8unorm-srgb",
-      }],
-    },
-    primitive: {
-      topology: "triangle-strip",
-    },
-  });
-  const bindGroupLayout = pipeline.getBindGroupLayout(0);
-  const sampler = device.createSampler({
-    label: "mip",
-    magFilter: "linear",
-  });
-  const views = [];
-  for (let i = 0; i < mipCount; i++) {
-    views.push(texture.createView({
-      label: "mip",
-      baseMipLevel: i,
-      mipLevelCount: 1,
-    }));
+class Mipmap extends Framework {
+  mipLevelCount: number;
+
+  drawPipeline!: GPURenderPipeline;
+  bindGroup!: GPUBindGroup;
+  vertexBuffer!: GPUBuffer;
+
+  constructor(options: {
+    mipLevelCount: number;
+    dimensions: Dimensions;
+  }, device: GPUDevice) {
+    super(options.dimensions, device);
+
+    this.mipLevelCount = options.mipLevelCount;
   }
 
-  for (let i = 1; i < mipCount; i++) {
-    const bindGroup = device.createBindGroup({
+  async generateMipmaps(encoder: GPUCommandEncoder, texture: GPUTexture) {
+    const shader = this.device.createShaderModule({
+      code: await Deno.readTextFile("blit.wgsl"),
+    });
+    const pipeline = this.device.createRenderPipeline({
+      label: "blit",
+      vertex: {
+        module: shader,
+        entryPoint: "vs_main",
+      },
+      fragment: {
+        module: shader,
+        entryPoint: "fs_main",
+        targets: [{
+          format: "rgba8unorm-srgb",
+        }],
+      },
+      primitive: {
+        topology: "triangle-strip",
+      },
+    });
+    const bindGroupLayout = pipeline.getBindGroupLayout(0);
+    const sampler = this.device.createSampler({
+      label: "mip",
+      magFilter: "linear",
+    });
+    const views = [];
+    for (let i = 0; i < this.mipLevelCount; i++) {
+      views.push(texture.createView({
+        label: "mip",
+        baseMipLevel: i,
+        mipLevelCount: 1,
+      }));
+    }
+
+    for (let i = 1; i < this.mipLevelCount; i++) {
+      const bindGroup = this.device.createBindGroup({
+        layout: bindGroupLayout,
+        entries: [
+          {
+            binding: 0,
+            resource: views[i - 1],
+          },
+          {
+            binding: 1,
+            resource: sampler,
+          },
+        ],
+      });
+
+      const renderPass = encoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: views[i],
+            storeOp: "store",
+            loadValue: [1, 1, 1, 1],
+          },
+        ],
+      });
+
+      renderPass.setPipeline(pipeline);
+      renderPass.setBindGroup(0, bindGroup);
+      renderPass.draw(4, 1);
+      renderPass.endPass();
+    }
+  }
+
+  async run(): Promise<any> {
+    const initEncoder = this.device.createCommandEncoder();
+
+    const vertexSize = 4 * 4;
+    const vertexData = createVertices();
+    this.vertexBuffer = createBufferInit(this.device, {
+      label: "Vertex Buffer",
+      usage: 0x20,
+      contents: vertexData.buffer,
+    });
+
+    const size = 1 << this.mipLevelCount;
+    const texels = createTexels(size, -0.8, 0.156);
+    const textureExtent = {
+      width: size,
+      height: size,
+    };
+    const texture = this.device.createTexture({
+      size: textureExtent,
+      mipLevelCount: this.mipLevelCount,
+      format: "rgba8unorm-srgb",
+      usage: 4 | 0x10 | 2,
+    });
+    const textureView = texture.createView();
+
+    const tempBuffer = createBufferInit(this.device, {
+      label: "Temporary Buffer",
+      usage: 4,
+      contents: texels.buffer,
+    });
+    initEncoder.copyBufferToTexture(
+      {
+        buffer: tempBuffer,
+        bytesPerRow: 4 * size,
+      },
+      {
+        texture: texture,
+      },
+      textureExtent,
+    );
+
+    const sampler = this.device.createSampler({
+      addressModeU: "repeat",
+      addressModeV: "repeat",
+      addressModeW: "repeat",
+      magFilter: "linear",
+      minFilter: "linear",
+      mipmapFilter: "linear",
+    });
+
+    const uniformBuffer = createBufferInit(this.device, {
+      label: "Uniform Buffer",
+      usage: 0x40 | 8,
+      contents:
+        generateMatrix(this.dimensions.width / this.dimensions.height).buffer,
+    });
+
+    const shader = this.device.createShaderModule({
+      code: await Deno.readTextFile("./draw.wgsl"),
+    });
+
+    this.drawPipeline = this.device.createRenderPipeline({
+      label: "draw",
+      vertex: {
+        module: shader,
+        entryPoint: "vs_main",
+        buffers: [
+          {
+            arrayStride: vertexSize,
+            attributes: [
+              {
+                format: "float4",
+                offset: 0,
+                shaderLocation: 0,
+              },
+            ],
+          },
+        ],
+      },
+      fragment: {
+        module: shader,
+        entryPoint: "fs_main",
+        targets: [
+          {
+            format: "rgba8unorm-srgb",
+          },
+        ],
+      },
+      primitive: {
+        topology: "triangle-strip",
+        cullMode: "back",
+      },
+    });
+
+    const bindGroupLayout = this.drawPipeline.getBindGroupLayout(0);
+    this.bindGroup = this.device.createBindGroup({
       layout: bindGroupLayout,
       entries: [
         {
           binding: 0,
-          resource: views[i - 1],
+          resource: {
+            buffer: uniformBuffer,
+          },
         },
         {
           binding: 1,
+          resource: textureView,
+        },
+        {
+          binding: 2,
           resource: sampler,
         },
       ],
     });
 
+    await this.generateMipmaps(initEncoder, texture);
+
+    this.device.queue.submit([initEncoder.finish()]);
+  }
+
+  render(encoder: GPUCommandEncoder, view: GPUTextureView) {
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          view: views[i],
+          view: view,
           storeOp: "store",
-          loadValue: [1, 1, 1, 1],
+          loadValue: [0.1, 0.2, 0.3, 1],
         },
       ],
     });
-
-    renderPass.setPipeline(pipeline);
-    renderPass.setBindGroup(0, bindGroup);
+    renderPass.setPipeline(this.drawPipeline);
+    renderPass.setBindGroup(0, this.bindGroup);
+    renderPass.setVertexBuffer(0, this.vertexBuffer);
     renderPass.draw(4, 1);
     renderPass.endPass();
   }
 }
 
-async function render(
-  device: GPUDevice,
-  drawPipeline: GPURenderPipeline,
-  bindGroup: GPUBindGroup,
-  vertexBuffer: GPUBuffer,
-) {
-  const { texture, outputBuffer } = createCapture(device, dimensions);
-
-  const encoder = device.createCommandEncoder();
-  const renderPass = encoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: texture.createView(),
-        storeOp: "store",
-        loadValue: [0.1, 0.2, 0.3, 1],
-      },
-    ],
-  });
-  renderPass.setPipeline(drawPipeline);
-  renderPass.setBindGroup(0, bindGroup);
-  renderPass.setVertexBuffer(0, vertexBuffer);
-  renderPass.draw(4, 1);
-  renderPass.endPass();
-
-  copyToBuffer(encoder, texture, outputBuffer, dimensions);
-
-  device.queue.submit([encoder.finish()]);
-
-  await createImage(outputBuffer, dimensions);
-}
-
-const dimensions: Dimensions = {
-  width: 1600,
-  height: 1200,
-};
-const mipLevelCount = 9;
-
-const adapter = await navigator.gpu.requestAdapter();
-const device = await adapter?.requestDevice();
-
-if (!device) {
-  console.error("no suitable adapter found");
-  Deno.exit(0);
-}
-
-const initEncoder = device.createCommandEncoder();
-
-const vertexSize = 4 * 4;
-const vertexData = createVertices();
-const vertexBuffer = createBufferInit(device, {
-  label: "Vertex Buffer",
-  usage: 0x20,
-  contents: vertexData.buffer,
-});
-
-const size = 1 << mipLevelCount;
-const texels = createTexels(size, -0.8, 0.156);
-const textureExtent = {
-  width: size,
-  height: size,
-};
-const texture = device.createTexture({
-  size: textureExtent,
-  mipLevelCount: mipLevelCount,
-  format: "rgba8unorm-srgb",
-  usage: 4 | 0x10 | 2,
-});
-const textureView = texture.createView();
-
-const tempBuffer = createBufferInit(device, {
-  label: "Temporary Buffer",
-  usage: 4,
-  contents: texels.buffer,
-});
-initEncoder.copyBufferToTexture(
-  {
-    buffer: tempBuffer,
-    bytesPerRow: 4 * size,
+const mipmap = new Mipmap({
+  mipLevelCount: 9,
+  dimensions: {
+    width: 1600,
+    height: 1200,
   },
-  {
-    texture: texture,
-  },
-  textureExtent,
-);
-
-const sampler = device.createSampler({
-  addressModeU: "repeat",
-  addressModeV: "repeat",
-  addressModeW: "repeat",
-  magFilter: "linear",
-  minFilter: "linear",
-  mipmapFilter: "linear",
-});
-
-const uniformBuffer = createBufferInit(device, {
-  label: "Uniform Buffer",
-  usage: 0x40 | 8,
-  contents: generateMatrix(dimensions.width / dimensions.height).buffer,
-});
-
-const shader = device.createShaderModule({
-  code: await Deno.readTextFile("./draw.wgsl"),
-});
-
-const drawPipeline = device.createRenderPipeline({
-  label: "draw",
-  vertex: {
-    module: shader,
-    entryPoint: "vs_main",
-    buffers: [
-      {
-        arrayStride: vertexSize,
-        attributes: [
-          {
-            format: "float4",
-            offset: 0,
-            shaderLocation: 0,
-          },
-        ],
-      },
-    ],
-  },
-  fragment: {
-    module: shader,
-    entryPoint: "fs_main",
-    targets: [
-      {
-        format: "rgba8unorm-srgb",
-      },
-    ],
-  },
-  primitive: {
-    topology: "triangle-strip",
-    cullMode: "back",
-  },
-});
-
-const bindGroupLayout = drawPipeline.getBindGroupLayout(0);
-const bindGroup = device.createBindGroup({
-  layout: bindGroupLayout,
-  entries: [
-    {
-      binding: 0,
-      resource: {
-        buffer: uniformBuffer,
-      },
-    },
-    {
-      binding: 1,
-      resource: textureView,
-    },
-    {
-      binding: 2,
-      resource: sampler,
-    },
-  ],
-});
-
-await generateMipmaps(initEncoder, device, texture, mipLevelCount);
-
-device.queue.submit([initEncoder.finish()]);
-
-await render(device, drawPipeline, bindGroup, vertexBuffer);
+}, await Mipmap.getDevice());
+await mipmap.renderImage();

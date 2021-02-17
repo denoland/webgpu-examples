@@ -1,4 +1,4 @@
-import { gmath, png, printImageString } from "./deps.ts";
+import { gmath, png } from "./deps.ts";
 
 export interface Dimensions {
   width: number;
