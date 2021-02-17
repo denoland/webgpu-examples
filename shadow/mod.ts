@@ -111,17 +111,28 @@ interface Entity {
 }
 
 interface Light {
-  pos: gmath.Vector3,
-  color: [number, number, number, number],
-  fov: number,
-  depth: [number, number],
-  targetView: GPUTextureView,
+  pos: gmath.Vector3;
+  color: [number, number, number, number];
+  fov: number;
+  depth: [number, number];
+  targetView: GPUTextureView;
 }
 
 function lightToRaw(light: Light): Float32Array {
-  let mxView = gmath.Matrix4.lookAtRh(light.pos, gmath.Vector3.zero, gmath.Vector3.forward);
-  const projection = new gmath.PerspectiveFov(new gmath.Deg(light.fov), 1, light.depth[0], light.depth[1]);
-  const mxViewProj = OPENGL_TO_WGPU_MATRIX.mul(projection.toPerspective().toMatrix4().mul(mxView));
+  let mxView = gmath.Matrix4.lookAtRh(
+    light.pos,
+    gmath.Vector3.zero,
+    gmath.Vector3.forward,
+  );
+  const projection = new gmath.PerspectiveFov(
+    new gmath.Deg(light.fov),
+    1,
+    light.depth[0],
+    light.depth[1],
+  );
+  const mxViewProj = OPENGL_TO_WGPU_MATRIX.mul(
+    projection.toPerspective().toMatrix4().mul(mxView),
+  );
   // deno-fmt-ignore
   return new Float32Array([
     ...mxViewProj.toFloat32Array().slice(),
@@ -131,11 +142,24 @@ function lightToRaw(light: Light): Float32Array {
 }
 
 let lightsAreDirty = true;
-async function render(device: GPUDevice, dimensions: Dimensions, entities: Entity[], entityUniformBuffer: GPUBuffer, lights: Light[], lightStorageBuffer: GPUBuffer, lightSize: number, shadowPass: Pass, entityBindGroup: GPUBindGroup, forwardDepth: GPUTextureView, forwardPass: Pass) {
+async function render(
+  device: GPUDevice,
+  dimensions: Dimensions,
+  entities: Entity[],
+  entityUniformBuffer: GPUBuffer,
+  lights: Light[],
+  lightStorageBuffer: GPUBuffer,
+  lightSize: number,
+  shadowPass: Pass,
+  entityBindGroup: GPUBindGroup,
+  forwardDepth: GPUTextureView,
+  forwardPass: Pass,
+) {
   for (const entity of entities) {
     if (entity.rotationSpeed != 0) {
-      const rotation = gmath.Matrix4.fromAngleX(new gmath.Deg(entity.rotationSpeed));
-      entity.mxWorld = entity.mxWorld.mul(rotation);
+      const rotation = gmath.Matrix4.fromAngleX(
+        new gmath.Deg(entity.rotationSpeed),
+      );      entity.mxWorld = entity.mxWorld.mul(rotation);
     }
     const data = new Float32Array([
       ...entity.mxWorld.toFloat32Array().slice(),
@@ -158,7 +182,9 @@ async function render(device: GPUDevice, dimensions: Dimensions, entities: Entit
   const encoder = device.createCommandEncoder();
   encoder.pushDebugGroup("shadow passes");
   for (let i = 0; i < lights.length; i++) {
-    encoder.pushDebugGroup(`shadow pass ${i} (light at position ${lights[i].pos})`);
+    encoder.pushDebugGroup(
+      `shadow pass ${i} (light at position ${lights[i].pos})`,
+    );
 
     encoder.copyBufferToBuffer(
       lightStorageBuffer,
@@ -200,7 +226,7 @@ async function render(device: GPUDevice, dimensions: Dimensions, entities: Entit
     colorAttachments: [
       {
         view: texture.createView(),
-        loadValue: [0.1, 0.2, 0,3, 1],
+        loadValue: [0.1, 0.2, 0.3, 1],
         storeOp: "store",
       },
     ],
@@ -210,7 +236,7 @@ async function render(device: GPUDevice, dimensions: Dimensions, entities: Entit
       depthStoreOp: "clear",
       stencilLoadValue: "load",
       stencilStoreOp: "store",
-    }
+    },
   });
   renderPass.setPipeline(forwardPass.pipeline);
   renderPass.setBindGroup(0, forwardPass.bindGroup);
@@ -231,8 +257,8 @@ async function render(device: GPUDevice, dimensions: Dimensions, entities: Entit
 }
 
 const dimensions: Dimensions = {
-  width: 800,
-  height: 600,
+  width: 1600,
+  height: 1200,
 };
 const maxLights = 10;
 const shadowSize: GPUExtent3D = {
@@ -319,6 +345,7 @@ const entityUniformBuffer = device.createBuffer({
   usage: 0x40 | 8,
 });
 
+// deno-fmt-ignore
 const entities: Entity[] = [
   {
     mxWorld: gmath.Matrix4.fromCols(
@@ -338,6 +365,7 @@ const entities: Entity[] = [
 ];
 
 // TODO
+// deno-fmt-ignore
 const x = [
   gmath.Matrix4.fromCols(
     0.6929103, 0.07372393, 0.06663421, 0.0,
@@ -482,9 +510,9 @@ const shadowBindGroupLayout = device.createBindGroupLayout({
       visibility: 1,
       buffer: {
         minBindingSize: uniformSize,
-      }
-    }
-  ]
+      },
+    },
+  ],
 });
 const shadowPipelineLayout = device.createPipelineLayout({
   label: "shadow",
@@ -532,7 +560,7 @@ const shadowPass: Pass = {
   pipeline: shadowRenderPipeline,
   bindGroup: shadowBindGroup,
   uniformBuffer: shadowUniformBuffer,
-}
+};
 
 const forwardBindGroupLayout = device.createBindGroupLayout({
   entries: [
@@ -573,7 +601,6 @@ const forwardPipelineLayout = device.createPipelineLayout({
   bindGroupLayouts: [forwardBindGroupLayout, localBindGroupLayout],
 });
 
-
 const mxTotal = generateMatrix(dimensions.width / dimensions.height);
 const buffer = new ArrayBuffer(mxTotal.byteLength + (4 * 4));
 const float32 = new Float32Array(buffer);
@@ -594,13 +621,13 @@ const forwardBindGroup = device.createBindGroup({
       binding: 0,
       resource: {
         buffer: forwardUniformBuffer,
-      }
+      },
     },
     {
       binding: 1,
       resource: {
         buffer: lightStorageBuffer,
-      }
+      },
     },
     {
       binding: 2,
@@ -619,7 +646,7 @@ const forwardRenderPipeline = device.createRenderPipeline({
   vertex: {
     module: shader,
     entryPoint: "vs_main",
-    buffers: [vertexBufferLayout]
+    buffers: [vertexBufferLayout],
   },
   fragment: {
     module: shader,
@@ -644,7 +671,7 @@ const forwardPass: Pass = {
   pipeline: forwardRenderPipeline,
   bindGroup: forwardBindGroup,
   uniformBuffer: forwardUniformBuffer,
-}
+};
 
 const depthTexture = device.createTexture({
   size: dimensions,
@@ -652,4 +679,16 @@ const depthTexture = device.createTexture({
   usage: 0x10,
 });
 
-await render(device, dimensions, entities, entityUniformBuffer, lights, lightStorageBuffer, lightSize, shadowPass, entityBindGroup, depthTexture.createView(), forwardPass);
+await render(
+  device,
+  dimensions,
+  entities,
+  entityUniformBuffer,
+  lights,
+  lightStorageBuffer,
+  lightSize,
+  shadowPass,
+  entityBindGroup,
+  depthTexture.createView(),
+  forwardPass,
+);
