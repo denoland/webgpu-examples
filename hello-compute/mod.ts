@@ -16,12 +16,13 @@ const shaderModule = device.createShaderModule({
 
 const stagingBuffer = device.createBuffer({
   size: numbers.byteLength,
-  usage: 1 | 8,
+  usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
 });
 
 const storageBuffer = createBufferInit(device, {
   label: "Storage Buffer",
-  usage: 0x80 | 8 | 4,
+  usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST |
+    GPUBufferUsage.COPY_SRC,
   contents: numbers.buffer,
 });
 
@@ -29,7 +30,7 @@ const bindGroupLayout = device.createBindGroupLayout({
   entries: [
     {
       binding: 0,
-      visibility: 4,
+      visibility: GPUShaderStage.COMPUTE,
       buffer: {
         type: "storage",
         minBindingSize: 4,

@@ -105,19 +105,19 @@ class Cube extends Framework {
   vertexBuffer!: GPUBuffer;
   indexCount!: number;
 
-  async run(): Promise<any> {
+  async init(): Promise<any> {
     const { vertexData, indexData } = createVertices();
     this.indexCount = indexData.length;
 
     this.vertexBuffer = createBufferInit(this.device, {
       label: "Vertex Buffer",
-      usage: 0x20,
+      usage: GPUBufferUsage.VERTEX,
       contents: vertexData.buffer,
     });
 
     this.indexBuffer = createBufferInit(this.device, {
       label: "Index Buffer",
-      usage: 0x10,
+      usage: GPUBufferUsage.INDEX,
       contents: indexData.buffer,
     });
 
@@ -125,19 +125,19 @@ class Cube extends Framework {
       entries: [
         {
           binding: 0,
-          visibility: 1,
+          visibility: GPUShaderStage.VERTEX,
           buffer: {
             minBindingSize: 64,
           },
         },
         {
           binding: 1,
-          visibility: 2,
+          visibility: GPUShaderStage.FRAGMENT,
           texture: {},
         },
         {
           binding: 2,
-          visibility: 2,
+          visibility: GPUShaderStage.FRAGMENT,
           sampler: {},
         },
       ],
@@ -157,7 +157,7 @@ class Cube extends Framework {
     const texture = this.device.createTexture({
       size: textureExtent,
       format: "rgba8unorm-srgb",
-      usage: 4 | 2,
+      usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_DST,
     });
     const textureView = texture.createView();
     this.device.queue.writeTexture(
@@ -181,7 +181,7 @@ class Cube extends Framework {
     );
     const uniformBuffer = createBufferInit(this.device, {
       label: "Uniform Buffer",
-      usage: 0x40 | 8,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       contents: mxTotal.buffer,
     });
 
@@ -275,4 +275,4 @@ const cube = new Cube({
   width: 1600,
   height: 1200,
 }, await Cube.getDevice());
-await cube.renderImage();
+await cube.renderPng();

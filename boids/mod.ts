@@ -24,7 +24,7 @@ class Boids extends Framework {
     this.particlesPerGroup = options.particlesPerGroup;
   }
 
-  async run() {
+  async init() {
     const computeShader = this.device.createShaderModule({
       code: await Deno.readTextFile("./compute.wgsl"),
     });
@@ -45,7 +45,7 @@ class Boids extends Framework {
 
     const simParamBuffer = createBufferInit(this.device, {
       label: "Simulation Parameter Buffer",
-      usage: 0x0040 | 0x0008,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       contents: simParamData.buffer,
     });
 
@@ -53,14 +53,14 @@ class Boids extends Framework {
       entries: [
         {
           binding: 0,
-          visibility: 0x4,
+          visibility: GPUShaderStage.COMPUTE,
           buffer: {
             minBindingSize: simParamData.length * 4,
           },
         },
         {
           binding: 1,
-          visibility: 0x4,
+          visibility: GPUShaderStage.COMPUTE,
           buffer: {
             type: "read-only-storage",
             minBindingSize: this.particleCount * 16,
@@ -68,7 +68,7 @@ class Boids extends Framework {
         },
         {
           binding: 2,
-          visibility: 0x4,
+          visibility: GPUShaderStage.COMPUTE,
           buffer: {
             type: "storage",
             minBindingSize: this.particleCount * 16,
@@ -146,7 +146,7 @@ class Boids extends Framework {
     ]);
     this.verticesBuffer = createBufferInit(this.device, {
       label: "Vertex Buffer",
-      usage: 0x0020 | 0x0008,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
       contents: vertexBufferData.buffer,
     });
 
@@ -161,7 +161,8 @@ class Boids extends Framework {
     for (let i = 0; i < 2; i++) {
       this.particleBuffers.push(createBufferInit(this.device, {
         label: "Particle Buffer " + i,
-        usage: 0x0020 | 0x0080 | 0x0008,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.STORAGE |
+          GPUBufferUsage.COPY_DST,
         contents: initialParticleData.buffer,
       }));
     }
@@ -236,4 +237,4 @@ const boids = new Boids({
     height: 1200,
   },
 }, await Boids.getDevice());
-await boids.renderImage();
+await boids.renderPng();

@@ -1,9 +1,4 @@
-import {
-  copyToBuffer,
-  createCapture,
-  createImage,
-  Dimensions,
-} from "./utils.ts";
+import { copyToBuffer, createCapture, createPng, Dimensions } from "./utils.ts";
 
 export class Framework {
   device: GPUDevice;
@@ -27,11 +22,11 @@ export class Framework {
     this.device = device;
   }
 
-  async run() {}
+  async init() {}
   render(encoder: GPUCommandEncoder, view: GPUTextureView) {}
 
-  async renderImage() {
-    await this.run();
+  async renderPng() {
+    await this.init();
     const { texture, outputBuffer } = createCapture(
       this.device,
       this.dimensions,
@@ -40,6 +35,6 @@ export class Framework {
     this.render(encoder, texture.createView());
     copyToBuffer(encoder, texture, outputBuffer, this.dimensions);
     this.device.queue.submit([encoder.finish()]);
-    await createImage(outputBuffer, this.dimensions);
+    await createPng(outputBuffer, this.dimensions);
   }
 }

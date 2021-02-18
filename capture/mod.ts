@@ -1,7 +1,7 @@
 import {
   copyToBuffer,
   createCapture,
-  createImage,
+  createPng,
   Dimensions,
 } from "../utils.ts";
 
@@ -35,4 +35,4 @@ copyToBuffer(encoder, texture, outputBuffer, dimensions);
 
 device.queue.submit([encoder.finish()]);
 
-await createImage(outputBuffer, dimensions);
+await createPng(outputBuffer, dimensions);

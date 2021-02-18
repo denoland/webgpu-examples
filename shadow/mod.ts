@@ -154,11 +154,12 @@ class Shadow extends Framework {
   shadowPass!: Pass;
   forwardPass!: Pass;
   depthTextureView!: GPUTextureView;
-  lightsAreDirty = true;
   entityUniformBuffer!: GPUBuffer;
   lightStorageBuffer!: GPUBuffer;
   lights!: Light[];
   entityBindGroup!: GPUBindGroup;
+
+  lightsAreDirty = true;
 
   constructor(options: {
     maxLights: number;
@@ -169,7 +170,7 @@ class Shadow extends Framework {
     this.maxLights = options.maxLights;
   }
 
-  async run(): Promise<any> {
+  async init(): Promise<any> {
     const shadowSize: GPUExtent3D = {
       width: 512,
       height: 512,
@@ -181,12 +182,12 @@ class Shadow extends Framework {
       createCube();
     const cubeVertexBuffer = createBufferInit(this.device, {
       label: "Cubes Vertex Buffer",
-      usage: 0x20,
+      usage: GPUBufferUsage.VERTEX,
       contents: cubeVertexData.buffer,
     });
     const cubeIndexBuffer = createBufferInit(this.device, {
       label: "Cubes Index Buffer",
-      usage: 0x10,
+      usage: GPUBufferUsage.INDEX,
       contents: cubeIndexData.buffer,
     });
 
@@ -196,12 +197,12 @@ class Shadow extends Framework {
       );
     const planeVertexBuffer = createBufferInit(this.device, {
       label: "Plane Vertex Buffer",
-      usage: 0x20,
+      usage: GPUBufferUsage.VERTEX,
       contents: planeVertexData.buffer,
     });
     const planeIndexBuffer = createBufferInit(this.device, {
       label: "Plane Index Buffer",
-      usage: 0x10,
+      usage: GPUBufferUsage.INDEX,
       contents: planeIndexData.buffer,
     });
 
@@ -243,7 +244,7 @@ class Shadow extends Framework {
     const numEntities = 1 + cubeDescs.length;
     this.entityUniformBuffer = this.device.createBuffer({
       size: numEntities * 256,
-      usage: 0x40 | 8,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
     this.entities = [
@@ -305,7 +306,7 @@ class Shadow extends Framework {
       entries: [
         {
           binding: 0,
-          visibility: 1 | 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: {
             hasDynamicOffset: true,
             minBindingSize: entityUniformSize,
@@ -335,7 +336,7 @@ class Shadow extends Framework {
     const shadowTexture = this.device.createTexture({
       size: shadowSize,
       format: "depth32float",
-      usage: 0x10 | 4,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.SAMPLED,
     });
     const shadowView = shadowTexture.createView();
     const shadowTargetViews: GPUTextureView[] = [0, 1].map((i) => {
@@ -367,7 +368,8 @@ class Shadow extends Framework {
     const lightUniformSize = this.maxLights * LIGHT_SIZE;
     this.lightStorageBuffer = this.device.createBuffer({
       size: lightUniformSize,
-      usage: 0x80 | 4 | 8,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC |
+        GPUBufferUsage.COPY_DST,
     });
 
     const vertexBufferLayout: GPUVertexBufferLayout = {
@@ -395,7 +397,7 @@ class Shadow extends Framework {
       entries: [
         {
           binding: 0,
-          visibility: 1,
+          visibility: GPUShaderStage.VERTEX,
           buffer: {
             minBindingSize: uniformSize,
           },
@@ -408,7 +410,7 @@ class Shadow extends Framework {
     });
     const shadowUniformBuffer = this.device.createBuffer({
       size: uniformSize,
-      usage: 0x40 | 8,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
     const shadowBindGroup = this.device.createBindGroup({
@@ -454,14 +456,14 @@ class Shadow extends Framework {
       entries: [
         {
           binding: 0,
-          visibility: 1 | 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: {
             minBindingSize: uniformSize,
           },
         },
         {
           binding: 1,
-          visibility: 1 | 2,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: {
             type: "read-only-storage",
             minBindingSize: lightUniformSize,
@@ -469,7 +471,7 @@ class Shadow extends Framework {
         },
         {
           binding: 2,
-          visibility: 2,
+          visibility: GPUShaderStage.FRAGMENT,
           texture: {
             sampleType: "depth",
             viewDimension: "2d-array",
@@ -477,7 +479,7 @@ class Shadow extends Framework {
         },
         {
           binding: 3,
-          visibility: 2,
+          visibility: GPUShaderStage.FRAGMENT,
           sampler: {
             type: "comparison",
           },
@@ -500,7 +502,7 @@ class Shadow extends Framework {
 
     const forwardUniformBuffer = createBufferInit(this.device, {
       label: "Uniform Buffer",
-      usage: 0x40 | 8,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       contents: buffer,
     });
 
@@ -566,7 +568,7 @@ class Shadow extends Framework {
     this.depthTextureView = this.device.createTexture({
       size: this.dimensions,
       format: "depth32float",
-      usage: 0x10,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
     }).createView();
   }
 
@@ -679,4 +681,4 @@ const msaaLine = new Shadow({
     height: 1200,
   },
 }, await Shadow.getDevice(["depth-clamping"]));
-await msaaLine.renderImage();
+await msaaLine.renderPng();

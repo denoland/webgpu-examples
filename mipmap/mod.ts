@@ -139,14 +139,14 @@ class Mipmap extends Framework {
     }
   }
 
-  async run(): Promise<any> {
+  async init(): Promise<any> {
     const initEncoder = this.device.createCommandEncoder();
 
     const vertexSize = 4 * 4;
     const vertexData = createVertices();
     this.vertexBuffer = createBufferInit(this.device, {
       label: "Vertex Buffer",
-      usage: 0x20,
+      usage: GPUBufferUsage.VERTEX,
       contents: vertexData.buffer,
     });
 
@@ -160,13 +160,14 @@ class Mipmap extends Framework {
       size: textureExtent,
       mipLevelCount: this.mipLevelCount,
       format: "rgba8unorm-srgb",
-      usage: 4 | 0x10 | 2,
+      usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.RENDER_ATTACHMENT |
+        GPUTextureUsage.COPY_DST,
     });
     const textureView = texture.createView();
 
     const tempBuffer = createBufferInit(this.device, {
       label: "Temporary Buffer",
-      usage: 4,
+      usage: GPUBufferUsage.COPY_SRC,
       contents: texels.buffer,
     });
     initEncoder.copyBufferToTexture(
@@ -191,7 +192,7 @@ class Mipmap extends Framework {
 
     const uniformBuffer = createBufferInit(this.device, {
       label: "Uniform Buffer",
-      usage: 0x40 | 8,
+      usage: GPUBufferUsage.UNIFRM | GPUBufferUsage.COPY_DST,
       contents:
         generateMatrix(this.dimensions.width / this.dimensions.height).buffer,
     });
@@ -284,4 +285,4 @@ const mipmap = new Mipmap({
     height: 1200,
   },
 }, await Mipmap.getDevice());
-await mipmap.renderImage();
+await mipmap.renderPng();

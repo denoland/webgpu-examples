@@ -40,12 +40,12 @@ export function createCapture(
   const { padded } = getRowPadding(dimensions.width);
   const outputBuffer = device.createBuffer({
     size: padded * dimensions.height,
-    usage: 1 | 8,
+    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
   });
   const texture = device.createTexture({
     size: dimensions,
     format: "rgba8unorm-srgb",
-    usage: 0x10 | 1,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
   });
 
   return { outputBuffer, texture };
@@ -72,7 +72,7 @@ export function copyToBuffer(
   );
 }
 
-export async function createImage(
+export async function createPng(
   buffer: GPUBuffer,
   dimensions: Dimensions,
 ): Promise<void> {

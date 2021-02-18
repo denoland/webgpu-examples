@@ -78,7 +78,7 @@ class MsaaLine extends Framework {
     });
   }
 
-  async run(): Promise<any> {
+  async init(): Promise<any> {
     const shader = this.device.createShaderModule({
       code: await Deno.readTextFile("./shader.wgsl"),
     });
@@ -91,7 +91,7 @@ class MsaaLine extends Framework {
       size: this.dimensions,
       sampleCount: this.sampleCount,
       format: "rgba8unorm-srgb",
-      usage: 0x10,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
     }).createView();
 
     const vertexSizePerIter = 6 * 2;
@@ -118,7 +118,7 @@ class MsaaLine extends Framework {
 
     const vertexBuffer = createBufferInit(this.device, {
       label: "Vertex Buffer",
-      usage: 0x20,
+      usage: GPUBufferUsage.VERTEX,
       contents: vertexData.buffer,
     });
 
@@ -154,4 +154,4 @@ const msaaLine = new MsaaLine({
     height: 1200,
   },
 }, await MsaaLine.getDevice());
-await msaaLine.renderImage();
+await msaaLine.renderPng();
