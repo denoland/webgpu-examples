@@ -192,7 +192,7 @@ class Mipmap extends Framework {
 
     const uniformBuffer = createBufferInit(this.device, {
       label: "Uniform Buffer",
-      usage: GPUBufferUsage.UNIFRM | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       contents:
         generateMatrix(this.dimensions.width / this.dimensions.height).buffer,
     });
