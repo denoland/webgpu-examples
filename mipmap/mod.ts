@@ -51,7 +51,7 @@ function generateMatrix(aspectRatio: number): Float32Array {
   const mxView = gmath.Matrix4.lookAtRh(
     new gmath.Vector3(0, 0, 10),
     new gmath.Vector3(0, 50, 0),
-    gmath.Vector3.forward,
+    gmath.Vector3.forward(),
   );
   return OPENGL_TO_WGPU_MATRIX.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
