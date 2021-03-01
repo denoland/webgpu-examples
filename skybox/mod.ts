@@ -225,14 +225,13 @@ class Skybox extends Framework {
 
     const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!, 1));
 
-    const image =
-      Dds.read(
-        await Deno.readFile(
-          skyboxFormat === "bc1-rgba-unorm-srgb"
-            ? "./images/bc1.dds"
-            : "./images/bgra.dds",
-        ),
-      ).data;
+    const image = Dds.read(
+      await Deno.readFile(
+        skyboxFormat === "bc1-rgba-unorm-srgb"
+          ? "./images/bc1.dds"
+          : "./images/bgra.dds",
+      ),
+    ).data;
 
     const texture = this.device.createTexture({
       size,
@@ -255,14 +254,12 @@ class Skybox extends Framework {
           depth: Math.max(1, 1 >> j),
         };
 
-        const physicalWidth =
-          Math.floor(
-            (mipSize.width + blockDimensions[0] - 1) / blockDimensions[0],
-          ) * blockDimensions[0];
-        const physicalHeight =
-          Math.floor(
-            (mipSize.height + blockDimensions[1] - 1) / blockDimensions[1],
-          ) * blockDimensions[1];
+        const physicalWidth = Math.floor(
+          (mipSize.width + blockDimensions[0] - 1) / blockDimensions[0],
+        ) * blockDimensions[0];
+        const physicalHeight = Math.floor(
+          (mipSize.height + blockDimensions[1] - 1) / blockDimensions[1],
+        ) * blockDimensions[1];
 
         const widthBlocks = Math.floor(physicalWidth / blockDimensions[0]);
         const heightBlocks = Math.floor(physicalHeight / blockDimensions[1]);
