@@ -39,10 +39,12 @@ export function createCapture(
 ): CreateCapture {
   const { padded } = getRowPadding(dimensions.width);
   const outputBuffer = device.createBuffer({
+    label: "Capture",
     size: padded * dimensions.height,
     usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
   });
   const texture = device.createTexture({
+    label: "Capture",
     size: dimensions,
     format: "rgba8unorm-srgb",
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
@@ -132,7 +134,7 @@ export function createBufferInit(
 }
 
 // deno-fmt-ignore
-export const OPENGL_TO_WGPU_MATRIX = gmath.Matrix4.fromCols(
+export const OPENGL_TO_WGPU_MATRIX = gmath.Matrix4.from(
   1.0, 0.0, 0.0, 0.0,
   0.0, 1.0, 0.0, 0.0,
   0.0, 0.0, 0.5, 0.0,

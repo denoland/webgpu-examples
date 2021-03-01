@@ -92,7 +92,7 @@ function generateMatrix(aspectRatio: number): Float32Array {
   const mxView = gmath.Matrix4.lookAtRh(
     new gmath.Vector3(3, -10, 6),
     new gmath.Vector3(0, 0, 0),
-    gmath.Vector3.forward,
+    gmath.Vector3.forward(),
   );
   return OPENGL_TO_WGPU_MATRIX.mul(mxProjection.mul(mxView)).toFloat32Array();
 }
@@ -119,8 +119,8 @@ interface Light {
 function lightToRaw(light: Light): Float32Array {
   let mxView = gmath.Matrix4.lookAtRh(
     light.pos,
-    gmath.Vector3.zero,
-    gmath.Vector3.forward,
+    gmath.Vector3.zero(),
+    gmath.Vector3.forward(),
   );
   const projection = new gmath.PerspectiveFov(
     new gmath.Deg(light.fov),
@@ -260,39 +260,18 @@ class Shadow extends Framework {
       },
     ];
 
-    // TODO
-    // deno-fmt-ignore
-    const x = [
-      gmath.Matrix4.fromCols(
-        0.6929103, 0.07372393, 0.06663421, 0.0,
-        -0.06663421, 0.6929103, -0.07372393, 0.0,
-        -0.07372393, 0.06663421, 0.6929103, 0.0,
-        -2.0, -2.0, 2.0, 1.0,
-      ),
-      gmath.Matrix4.fromCols(
-        0.990416, 0.42016667, 0.72975075, 0.0,
-        -0.72975075, 0.990416, 0.42016667, 0.0,
-        -0.42016667, -0.72975075, 0.990416, 0.0,
-        2.0, -2.0, 2.0, 1.0,
-      ),
-      gmath.Matrix4.fromCols(
-        -0.19509922, -0.23932466, -1.0557746, 0.0,
-        -1.0557746, -0.19509922, 0.23932466, 0.0,
-        -0.23932466, 1.0557746, -0.19509922, 0.0,
-        -2.0, 2.0, 2.0, 1.0,
-      ),
-      gmath.Matrix4.fromCols(
-        -0.21961509, 0.29999992, 0.8196151, 0.0,
-        0.8196151, -0.21961509, 0.29999992, 0.0,
-        0.29999992, 0.8196151, -0.21961509, 0.0,
-        2.0, 2.0, 2.0, 1.0,
-      ),
-    ];
-
     for (let i = 0; i < cubeDescs.length; i++) {
+      const cube = cubeDescs[i];
       this.entities.push({
-        mxWorld: x[i],
-        rotationSpeed: cubeDescs[i].rotation,
+        mxWorld: gmath.Matrix4.fromDecomposed({
+          disp: cube.offset,
+          rot: gmath.Quaternion.fromAxisAngle(
+            cube.offset.normal(),
+            new gmath.Deg(cube.angle),
+          ),
+          scale: cube.scale,
+        }),
+        rotationSpeed: cube.rotation,
         color: [0, 1, 0, 1],
         vertexBuffer: cubeVertexBuffer,
         indexBuffer: cubeIndexBuffer,
@@ -674,11 +653,11 @@ class Shadow extends Framework {
   }
 }
 
-const msaaLine = new Shadow({
+const shadow = new Shadow({
   maxLights: 10,
   dimensions: {
     width: 1600,
     height: 1200,
   },
 }, await Shadow.getDevice(["depth-clamping"]));
-await msaaLine.renderPng();
+await shadow.renderPng();
