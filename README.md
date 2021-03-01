@@ -3,7 +3,7 @@ These examples are a deno port of the
 using `utils`'s `createCapture`, `copyToBuffer` & `createPng` instead of a
 swapchain as deno's webgpu implementation is headless.
 
-To try out, compile https://github.com/denoland/deno/pull/7977 from source and
+To try out, upgrade deno to canary and
 run the commands below.
 
 ```shell
