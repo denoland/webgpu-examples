@@ -23,7 +23,7 @@ export class Framework {
   }
 
   async init() {}
-  render(encoder: GPUCommandEncoder, view: GPUTextureView) {}
+  render(_encoder: GPUCommandEncoder, _view: GPUTextureView) {}
 
   async renderPng() {
     await this.init();

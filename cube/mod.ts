@@ -105,7 +105,7 @@ class Cube extends Framework {
   vertexBuffer!: GPUBuffer;
   indexCount!: number;
 
-  async init(): Promise<any> {
+  async init() {
     const { vertexData, indexData } = createVertices();
     this.indexCount = indexData.length;
 
@@ -206,7 +206,7 @@ class Cube extends Framework {
     });
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile("./shader.wgsl"),
+      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
     });
     const vertexBuffers: GPUVertexBufferLayout[] = [
       {

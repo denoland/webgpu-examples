@@ -60,9 +60,11 @@ class Skybox extends Framework {
   bindGroup!: GPUBindGroup;
   uniformBuffer!: GPUBuffer;
 
-  async init(): Promise<any> {
+  async init() {
     const data = obj.Obj.parse(
-      await Deno.readTextFile("./models/teslacyberv3.0.obj"),
+      await Deno.readTextFile(
+        new URL("./models/teslacyberv3.0.obj", import.meta.url),
+      ),
       {
         strict: true,
       },
@@ -117,7 +119,7 @@ class Skybox extends Framework {
     });
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile("./shader.wgsl"),
+      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
     });
 
     this.camera = {
@@ -227,9 +229,12 @@ class Skybox extends Framework {
 
     const image = Dds.read(
       await Deno.readFile(
-        skyboxFormat === "bc1-rgba-unorm-srgb"
-          ? "./images/bc1.dds"
-          : "./images/bgra.dds",
+        new URL(
+          skyboxFormat === "bc1-rgba-unorm-srgb"
+            ? "./images/bc1.dds"
+            : "./images/bgra.dds",
+          import.meta.url,
+        ),
       ),
     ).data;
 
@@ -248,7 +253,7 @@ class Skybox extends Framework {
     let binaryOffset = 0;
     for (let i = 0; i < size.depth!; i++) {
       for (let j = 0; j < maxMips; j++) {
-        let mipSize = {
+        const mipSize = {
           width: Math.max(1, size.width! >> j),
           height: Math.max(1, size.height! >> j),
           depth: Math.max(1, 1 >> j),
@@ -325,8 +330,6 @@ class Skybox extends Framework {
   }
 
   render(encoder: GPUCommandEncoder, view: GPUTextureView) {
-    const rawUniform = cameraToUniformData(this.camera);
-
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [
         {

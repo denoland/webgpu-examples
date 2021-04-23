@@ -78,9 +78,9 @@ class MsaaLine extends Framework {
     });
   }
 
-  async init(): Promise<any> {
+  async init() {
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile("./shader.wgsl"),
+      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
     });
 
     const pipelineLayout = this.device.createPipelineLayout({
@@ -126,7 +126,7 @@ class MsaaLine extends Framework {
   }
 
   render(encoder: GPUCommandEncoder, view: GPUTextureView) {
-    let attachment: GPURenderPassColorAttachment = this.sampleCount == 1
+    const attachment: GPURenderPassColorAttachment = this.sampleCount == 1
       ? {
         view: view,
         storeOp: "store",

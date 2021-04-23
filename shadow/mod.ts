@@ -70,14 +70,14 @@ function createCube(): ObjectData {
 }
 
 function createPlane(size: number): ObjectData {
-  let vertexData = new Int8Array([
+  const vertexData = new Int8Array([
     ...vertex([size, -size, 0], [0, 0, 1]),
     ...vertex([size, size, 0], [0, 0, 1]),
     ...vertex([-size, -size, 0], [0, 0, 1]),
     ...vertex([-size, size, 0], [0, 0, 1]),
   ]);
 
-  let indexData = new Uint16Array([0, 1, 2, 2, 1, 3]);
+  const indexData = new Uint16Array([0, 1, 2, 2, 1, 3]);
 
   return { vertexData, indexData };
 }
@@ -117,7 +117,7 @@ interface Light {
 }
 
 function lightToRaw(light: Light): Float32Array {
-  let mxView = gmath.Matrix4.lookAtRh(
+  const mxView = gmath.Matrix4.lookAtRh(
     light.pos,
     gmath.Vector3.zero(),
     gmath.Vector3.forward(),
@@ -170,7 +170,7 @@ class Shadow extends Framework {
     this.maxLights = options.maxLights;
   }
 
-  async init(): Promise<any> {
+  async init() {
     const shadowSize: GPUExtent3D = {
       width: 512,
       height: 512,
@@ -368,7 +368,7 @@ class Shadow extends Framework {
     };
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile("./shader.wgsl"),
+      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
     });
 
     const uniformSize = (4 * 4 * 4) + (4 * 4);
