@@ -82,7 +82,7 @@ const computePipeline = device.createComputePipeline({
   compute: {
     module: shaderModule,
     entryPoint: "main",
-  }
+  },
 });
 
 const bindGroupLayout = computePipeline.getBindGroupLayout(0);

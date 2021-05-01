@@ -174,7 +174,7 @@ class Shadow extends Framework {
     const shadowSize: GPUExtent3D = {
       width: 512,
       height: 512,
-      depth: this.maxLights,
+      depthOrArrayLayers: this.maxLights,
     };
 
     const vertexSize = 1 * 4 * 2;
@@ -311,6 +311,7 @@ class Shadow extends Framework {
       magFilter: "linear",
       minFilter: "linear",
       compare: "less-equal",
+      maxAnisotropy: 0,
     });
     const shadowTexture = this.device.createTexture({
       size: shadowSize,
@@ -355,12 +356,12 @@ class Shadow extends Framework {
       arrayStride: vertexSize,
       attributes: [
         {
-          format: "char4",
+          format: "sint8x4",
           offset: 0,
           shaderLocation: 0,
         },
         {
-          format: "char4",
+          format: "sint8x4",
           offset: 4,
           shaderLocation: 1,
         },
@@ -414,6 +415,7 @@ class Shadow extends Framework {
       },
       primitive: {
         cullMode: "back",
+        clampDepth: this.device.features.includes("depth-clamping"),
       },
       depthStencil: {
         format: "depth32float",
@@ -421,7 +423,6 @@ class Shadow extends Framework {
         depthCompare: "less-equal",
         depthBias: 2,
         depthBiasSlopeScale: 2,
-        clampDepth: this.device.features.includes("depth-clamping"),
       },
     });
 
