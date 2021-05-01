@@ -173,12 +173,12 @@ class Skybox extends Framework {
             arrayStride: (4 * 3) + (4 * 3),
             attributes: [
               {
-                format: "float3",
+                format: "float32x3",
                 offset: 0,
                 shaderLocation: 0,
               },
               {
-                format: "float3",
+                format: "float32x3",
                 offset: 12,
                 shaderLocation: 1,
               },
@@ -222,7 +222,7 @@ class Skybox extends Framework {
     const size: GPUExtent3D = {
       width: IMAGE_SIZE,
       height: IMAGE_SIZE,
-      depth: 6,
+      depthOrArrayLayers: 6,
     };
 
     const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!, 1));
@@ -251,7 +251,7 @@ class Skybox extends Framework {
     const blockSize = skyboxFormat === "bc1-rgba-unorm-srgb" ? 8 : 4;
 
     let binaryOffset = 0;
-    for (let i = 0; i < size.depth!; i++) {
+    for (let i = 0; i < size.depthOrArrayLayers!; i++) {
       for (let j = 0; j < maxMips; j++) {
         const mipSize = {
           width: Math.max(1, size.width! >> j),
@@ -290,7 +290,7 @@ class Skybox extends Framework {
           {
             width: physicalWidth,
             height: physicalHeight,
-            depth: 1,
+            depthOrArrayLayers: 1,
           },
         );
 
