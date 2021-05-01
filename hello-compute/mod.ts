@@ -1,5 +1,7 @@
 import { createBufferInit } from "../utils.ts";
 
+const OVERFLOW = 0xffffffff;
+
 // Get some numbers from the command line, or use the default 1, 4, 3, 295.
 let numbers: Uint32Array;
 if (Deno.args.length > 0) {
@@ -17,9 +19,6 @@ if (!device) {
 }
 
 const shaderCode = `
-[[builtin(global_invocation_id)]]
-var global_id: vec3<u32>;
-
 [[block]]
 struct PrimeIndices {
     data: [[stride(4)]] array<u32>;
@@ -45,6 +44,11 @@ fn collatz_iterations(n_base: u32) -> u32{
             n = n / 2u;
         }
         else {
+            // Overflow? (i.e. 3*n + 1 > 0xffffffffu?)
+            if (n >= 1431655765u) {   // 0x55555555u
+                return 4294967295u;   // 0xffffffffu
+            }
+
             n = 3u * n + 1u;
         }
         i = i + 1u;
@@ -53,7 +57,7 @@ fn collatz_iterations(n_base: u32) -> u32{
 }
 
 [[stage(compute), workgroup_size(1)]]
-fn main() {
+fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
     v_indices.data[global_id.x] = collatz_iterations(v_indices.data[global_id.x]);
 }
 `;
@@ -74,19 +78,14 @@ const storageBuffer = createBufferInit(device, {
   contents: numbers.buffer,
 });
 
-const bindGroupLayout = device.createBindGroupLayout({
-  entries: [
-    {
-      binding: 0,
-      visibility: GPUShaderStage.COMPUTE,
-      buffer: {
-        type: "storage",
-        minBindingSize: 4,
-      },
-    },
-  ],
+const computePipeline = device.createComputePipeline({
+  compute: {
+    module: shaderModule,
+    entryPoint: "main",
+  }
 });
 
+const bindGroupLayout = computePipeline.getBindGroupLayout(0);
 const bindGroup = device.createBindGroup({
   layout: bindGroupLayout,
   entries: [
@@ -97,18 +96,6 @@ const bindGroup = device.createBindGroup({
       },
     },
   ],
-});
-
-const pipelineLayout = device.createPipelineLayout({
-  bindGroupLayouts: [bindGroupLayout],
-});
-
-const computePipeline = device.createComputePipeline({
-  layout: pipelineLayout,
-  compute: {
-    module: shaderModule,
-    entryPoint: "main",
-  },
 });
 
 const encoder = device.createCommandEncoder();
@@ -131,6 +118,14 @@ encoder.copyBufferToBuffer(
 device.queue.submit([encoder.finish()]);
 
 await stagingBuffer.mapAsync(1);
-const data = stagingBuffer.getMappedRange();
-console.log(new Uint32Array(data));
+const arrayBufferData = stagingBuffer.getMappedRange();
+const uintData = new Uint32Array(arrayBufferData);
+const checkedData = Array.from(uintData).map((n) => {
+  if (n === OVERFLOW) {
+    return "OVERFLOW";
+  } else {
+    return n.toString();
+  }
+});
+console.log(checkedData);
 stagingBuffer.unmap();

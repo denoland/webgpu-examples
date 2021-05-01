@@ -75,7 +75,7 @@ function createTexels(size: number): Uint8Array {
         0xFF - ((count * 5) & ~(~0 << 8)),
         0xFF - ((count * 15) & ~(~0 << 8)),
         0xFF - ((count * 50) & ~(~0 << 8)),
-        1,
+        0xFF,
       ],
       i * 4,
     );
@@ -213,12 +213,12 @@ class Cube extends Framework {
         arrayStride: 6 * 4,
         attributes: [
           {
-            format: "float4",
+            format: "float32x4",
             offset: 0,
             shaderLocation: 0,
           },
           {
-            format: "float2",
+            format: "float32x2",
             offset: 4 * 4,
             shaderLocation: 1,
           },

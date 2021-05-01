@@ -34,12 +34,12 @@ class MsaaLine extends Framework {
             arrayStride: 24,
             attributes: [
               {
-                format: "float2",
+                format: "float32x2",
                 offset: 0,
                 shaderLocation: 0,
               },
               {
-                format: "float4",
+                format: "float32x4",
                 offset: 8,
                 shaderLocation: 1,
               },

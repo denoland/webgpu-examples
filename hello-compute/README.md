@@ -12,4 +12,4 @@ that it will take to finish and reach the number `1`.
 
 in: `[1, 4, 3, 295]`
 
-out: `[0, 2, 7, 55]`
+out: `["0", "2", "7", "55"]`

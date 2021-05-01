@@ -6,16 +6,6 @@ import {
   OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
 
-function createVertices(): Float32Array {
-  // deno-fmt-ignore
-  return new Float32Array([
-    100.0, 0.0, 0.0, 1.0,
-    100.0, 1000.0, 0.0, 1.0,
-    -100.0, 0.0, 0.0, 1.0,
-    -100.0, 1000.0, 0.0, 1.0,
-  ]);
-}
-
 function createTexels(size: number, cx: number, cy: number): Uint8Array {
   const texels = new Uint8Array(size * size * 4);
   for (let i = 0; i < size * size; i++) {
@@ -61,7 +51,6 @@ class Mipmap extends Framework {
 
   drawPipeline!: GPURenderPipeline;
   bindGroup!: GPUBindGroup;
-  vertexBuffer!: GPUBuffer;
 
   constructor(options: {
     mipLevelCount: number;
@@ -142,14 +131,6 @@ class Mipmap extends Framework {
   async init() {
     const initEncoder = this.device.createCommandEncoder();
 
-    const vertexSize = 4 * 4;
-    const vertexData = createVertices();
-    this.vertexBuffer = createBufferInit(this.device, {
-      label: "Vertex Buffer",
-      usage: GPUBufferUsage.VERTEX,
-      contents: vertexData.buffer,
-    });
-
     const size = 1 << this.mipLevelCount;
     const texels = createTexels(size, -0.8, 0.156);
     const textureExtent = {
@@ -206,18 +187,7 @@ class Mipmap extends Framework {
       vertex: {
         module: shader,
         entryPoint: "vs_main",
-        buffers: [
-          {
-            arrayStride: vertexSize,
-            attributes: [
-              {
-                format: "float4",
-                offset: 0,
-                shaderLocation: 0,
-              },
-            ],
-          },
-        ],
+        buffers: [],
       },
       fragment: {
         module: shader,
@@ -272,7 +242,6 @@ class Mipmap extends Framework {
     });
     renderPass.setPipeline(this.drawPipeline);
     renderPass.setBindGroup(0, this.bindGroup);
-    renderPass.setVertexBuffer(0, this.vertexBuffer);
     renderPass.draw(4, 1);
     renderPass.endPass();
   }

@@ -95,12 +95,12 @@ class Boids extends Framework {
             stepMode: "instance",
             attributes: [
               {
-                format: "float2",
+                format: "float32x2",
                 offset: 0,
                 shaderLocation: 0,
               },
               {
-                format: "float2",
+                format: "float32x2",
                 offset: 8,
                 shaderLocation: 1,
               },
@@ -110,7 +110,7 @@ class Boids extends Framework {
             arrayStride: 2 * 4,
             attributes: [
               {
-                format: "float2",
+                format: "float32x2",
                 offset: 0,
                 shaderLocation: 2,
               },
