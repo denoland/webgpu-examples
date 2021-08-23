@@ -316,7 +316,7 @@ class Shadow extends Framework {
     const shadowTexture = this.device.createTexture({
       size: shadowSize,
       format: "depth32float",
-      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.SAMPLED,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
     });
     const shadowView = shadowTexture.createView();
     const shadowTargetViews: GPUTextureView[] = [0, 1].map((i) => {
@@ -443,7 +443,7 @@ class Shadow extends Framework {
         },
         {
           binding: 1,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          visibility: GPUShaderStage.FRAGMENT,
           buffer: {
             type: "read-only-storage",
             minBindingSize: lightUniformSize,
@@ -636,7 +636,7 @@ class Shadow extends Framework {
       depthStencilAttachment: {
         view: this.depthTextureView,
         depthLoadValue: 1,
-        depthStoreOp: "clear",
+        depthStoreOp: "discard",
         stencilLoadValue: "load",
         stencilStoreOp: "store",
       },
