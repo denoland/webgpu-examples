@@ -1,6 +1,3 @@
-// This should match `particleCount` on the TS side.
-let NUM_PARTICLES: u32 = 1500u;
-
 struct Particle {
   pos : vec2<f32>;
   vel : vec2<f32>;
@@ -23,14 +20,15 @@ struct Particles {
 };
 
 [[group(0), binding(0)]] var<uniform> params : SimParams;
-[[group(0), binding(1)]] var<storage> particlesSrc : [[access(read)]] Particles;
-[[group(0), binding(2)]] var<storage> particlesDst : [[access(read_write)]] Particles;
+[[group(0), binding(1)]] var<storage, read> particlesSrc : Particles;
+[[group(0), binding(2)]] var<storage, read_write> particlesDst : Particles;
 
 // https://github.com/austinEng/Project6-Vulkan-Flocking/blob/master/data/shaders/computeparticles/particle.comp
 [[stage(compute), workgroup_size(64)]]
 fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
-  let index : u32 = global_invocation_id.x;
-  if (index >= NUM_PARTICLES) {
+  let total = arrayLength(&particlesSrc.particles);
+  let index = global_invocation_id.x;
+  if (index >= total) {
     return;
   }
 
@@ -43,19 +41,17 @@ fn main([[builtin(global_invocation_id)]] global_invocation_id: vec3<u32>) {
   var cMassCount : i32 = 0;
   var cVelCount : i32 = 0;
 
-  var pos : vec2<f32>;
-  var vel : vec2<f32>;
   var i : u32 = 0u;
   loop {
-    if (i >= NUM_PARTICLES) {
+    if (i >= total) {
       break;
     }
     if (i == index) {
       continue;
     }
 
-    pos = particlesSrc.particles[i].pos;
-    vel = particlesSrc.particles[i].vel;
+    let pos = particlesSrc.particles[i].pos;
+    let vel = particlesSrc.particles[i].vel;
 
     if (distance(pos, vPos) < params.rule1Distance) {
       cMass = cMass + pos;

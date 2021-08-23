@@ -57,7 +57,7 @@ function createVertices(): {
 }
 
 function createTexels(size: number): Uint8Array {
-  const texels = new Uint8Array(size * size * 4);
+  const texels = new Uint8Array(size * size);
   for (let i = 0; i < size * size; i++) {
     const cx = 3 * (i % size) / (size - 1) - 2;
     const cy = 2 * Math.floor(i / size) / (size - 1) - 1;
@@ -70,15 +70,7 @@ function createTexels(size: number): Uint8Array {
       y = 2.0 * oldX * y + cy;
       count += 1;
     }
-    texels.set(
-      [
-        0xFF - ((count * 5) & ~(~0 << 8)),
-        0xFF - ((count * 15) & ~(~0 << 8)),
-        0xFF - ((count * 50) & ~(~0 << 8)),
-        0xFF,
-      ],
-      i * 4,
-    );
+    texels[i] = count;
   }
   return texels;
 }
@@ -133,12 +125,9 @@ class Cube extends Framework {
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
-          texture: {},
-        },
-        {
-          binding: 2,
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: {},
+          texture: {
+            sampleType: "uint",
+          },
         },
       ],
     });
@@ -156,8 +145,8 @@ class Cube extends Framework {
 
     const texture = this.device.createTexture({
       size: textureExtent,
-      format: "rgba8unorm-srgb",
-      usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_DST,
+      format: "r8uint",
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
     const textureView = texture.createView();
     this.device.queue.writeTexture(
@@ -166,15 +155,11 @@ class Cube extends Framework {
       },
       texels,
       {
-        bytesPerRow: 4 * size,
+        bytesPerRow: size,
         rowsPerImage: 0,
       },
       textureExtent,
     );
-
-    const sampler = this.device.createSampler({
-      minFilter: "linear",
-    });
 
     const mxTotal = generateMatrix(
       this.dimensions.width / this.dimensions.height,
@@ -197,10 +182,6 @@ class Cube extends Framework {
         {
           binding: 1,
           resource: textureView,
-        },
-        {
-          binding: 2,
-          resource: sampler,
         },
       ],
     });

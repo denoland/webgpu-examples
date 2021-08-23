@@ -7,7 +7,7 @@ export class Framework {
   static async getDevice(features: GPUFeatureName[] = []): Promise<GPUDevice> {
     const adapter = await navigator.gpu.requestAdapter();
     const device = await adapter?.requestDevice({
-      nonGuaranteedFeatures: features,
+      requiredFeatures: features,
     });
 
     if (!device) {
