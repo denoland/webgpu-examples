@@ -316,7 +316,8 @@ class Shadow extends Framework {
     const shadowTexture = this.device.createTexture({
       size: shadowSize,
       format: "depth32float",
-      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT |
+        GPUTextureUsage.TEXTURE_BINDING,
     });
     const shadowView = shadowTexture.createView();
     const shadowTargetViews: GPUTextureView[] = [0, 1].map((i) => {
