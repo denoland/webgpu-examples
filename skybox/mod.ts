@@ -242,7 +242,7 @@ class Skybox extends Framework {
       size,
       mipLevelCount: maxMips,
       format: skyboxFormat,
-      usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_DST,
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
 
     const blockDimensions = skyboxFormat === "bc1-rgba-unorm-srgb"
@@ -341,7 +341,7 @@ class Skybox extends Framework {
       depthStencilAttachment: {
         view: this.depthView,
         depthLoadValue: 1,
-        depthStoreOp: "clear",
+        depthStoreOp: "discard",
         stencilLoadValue: "load",
         stencilStoreOp: "store",
         stencilReadOnly: true,
