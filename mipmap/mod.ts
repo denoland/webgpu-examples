@@ -141,7 +141,8 @@ class Mipmap extends Framework {
       size: textureExtent,
       mipLevelCount: this.mipLevelCount,
       format: "rgba8unorm-srgb",
-      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT |
+      usage: GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.RENDER_ATTACHMENT |
         GPUTextureUsage.COPY_DST,
     });
     const textureView = texture.createView();
