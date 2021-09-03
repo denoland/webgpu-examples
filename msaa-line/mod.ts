@@ -80,7 +80,7 @@ class MsaaLine extends Framework {
 
   async init() {
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./shader.wgsl", import.meta.url)),
     });
 
     const pipelineLayout = this.device.createPipelineLayout({

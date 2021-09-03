@@ -63,7 +63,7 @@ class Mipmap extends Framework {
 
   async generateMipmaps(encoder: GPUCommandEncoder, texture: GPUTexture) {
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("blit.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("blit.wgsl", import.meta.url)),
     });
     const pipeline = this.device.createRenderPipeline({
       label: "blit",
@@ -180,7 +180,7 @@ class Mipmap extends Framework {
     });
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./draw.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./draw.wgsl", import.meta.url)),
     });
 
     this.drawPipeline = this.device.createRenderPipeline({

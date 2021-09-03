@@ -26,11 +26,11 @@ class Boids extends Framework {
 
   async init() {
     const computeShader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./compute.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./compute.wgsl", import.meta.url)),
     });
 
     const drawShader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./draw.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./draw.wgsl", import.meta.url)),
     });
 
     const simParamData = new Float32Array([

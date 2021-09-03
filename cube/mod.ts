@@ -187,7 +187,7 @@ class Cube extends Framework {
     });
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./shader.wgsl", import.meta.url)),
     });
     const vertexBuffers: GPUVertexBufferLayout[] = [
       {

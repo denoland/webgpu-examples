@@ -62,7 +62,7 @@ class Skybox extends Framework {
 
   async init() {
     const data = obj.Obj.parse(
-      await Deno.readTextFile(
+      Deno.readTextFileSync(
         new URL("./models/teslacyberv3.0.obj", import.meta.url),
       ),
       {
@@ -119,7 +119,7 @@ class Skybox extends Framework {
     });
 
     const shader = this.device.createShaderModule({
-      code: await Deno.readTextFile(new URL("./shader.wgsl", import.meta.url)),
+      code: Deno.readTextFileSync(new URL("./shader.wgsl", import.meta.url)),
     });
 
     this.camera = {
@@ -228,7 +228,7 @@ class Skybox extends Framework {
     const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!, 1));
 
     const image = Dds.read(
-      await Deno.readFile(
+      Deno.readFileSync(
         new URL(
           skyboxFormat === "bc1-rgba-unorm-srgb"
             ? "./images/bc1.dds"
