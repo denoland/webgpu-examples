@@ -1,4 +1,3 @@
-[[block]]
 struct Globals {
     view_proj: mat4x4<f32>;
     num_lights: vec4<u32>;
@@ -7,7 +6,6 @@ struct Globals {
 [[group(0), binding(0)]]
 var<uniform> u_globals: Globals;
 
-[[block]]
 struct Entity {
     world: mat4x4<f32>;
     color: vec4<f32>;
@@ -49,13 +47,19 @@ struct Light {
     color: vec4<f32>;
 };
 
-[[block]]
 struct Lights {
     data: [[stride(96)]] array<Light>;
 };
 
+// Used when storage types are not supported
+struct LightsWithoutStorage {
+    data: array<Light, 10>;
+};
+
 [[group(0), binding(1)]]
 var<storage, read> s_lights: Lights;
+[[group(0), binding(1)]]
+var<uniform> u_lights: LightsWithoutStorage;
 [[group(0), binding(2)]]
 var t_shadow: texture_depth_2d_array;
 [[group(0), binding(3)]]
@@ -100,5 +104,29 @@ fn fs_main(in: VertexOutput) -> [[location(0)]] vec4<f32> {
         }
     }
     // multiply the light by material color
+    return vec4<f32>(color, 1.0) * u_entity.color;
+}
+
+// The fragment entrypoint used when storage buffers are not available for the lights
+[[stage(fragment)]]
+fn fs_main_without_storage(in: VertexOutput) -> [[location(0)]] vec4<f32> {
+    let normal = normalize(in.world_normal);
+    var color: vec3<f32> = c_ambient;
+    var i: u32 = 0u;
+    loop {
+        if (i >= min(u_globals.num_lights.x, c_max_lights)) {
+            break;
+        }
+        // This line is the only difference from the entrypoint above. It uses the lights
+        // uniform instead of the lights storage buffer
+        let light = u_lights.data[i];
+        let shadow = fetch_shadow(i, light.proj * in.world_position);
+        let light_dir = normalize(light.pos.xyz - in.world_position.xyz);
+        let diffuse = max(0.0, dot(normal, light_dir));
+        color = color + shadow * diffuse * light.color.xyz;
+        continuing {
+            i = i + 1u;
+        }
+    }
     return vec4<f32>(color, 1.0) * u_entity.color;
 }

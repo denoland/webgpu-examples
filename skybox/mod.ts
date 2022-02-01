@@ -60,6 +60,7 @@ class Skybox extends Framework {
   bindGroup!: GPUBindGroup;
   uniformBuffer!: GPUBuffer;
 
+  // deno-lint-ignore require-await
   async init() {
     const data = obj.Obj.parse(
       Deno.readTextFileSync(

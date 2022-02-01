@@ -243,7 +243,7 @@ class Shadow extends Framework {
     const entityUniformSize = (4 * 4 * 4) + (4 * 4);
     const numEntities = 1 + cubeDescs.length;
     this.entityUniformBuffer = this.device.createBuffer({
-      size: numEntities * 256,
+      size: numEntities * this.device.limits.minUniformBufferOffsetAlignment,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
@@ -277,7 +277,7 @@ class Shadow extends Framework {
         indexBuffer: cubeIndexBuffer,
         indexFormat: "uint16",
         indexCount: cubeIndexData.length,
-        uniformOffset: (i + 1) * 256,
+        uniformOffset: (i + 1) * this.device.limits.minUniformBufferOffsetAlignment,
       });
     }
 
@@ -416,7 +416,7 @@ class Shadow extends Framework {
       },
       primitive: {
         cullMode: "back",
-        clampDepth: this.device.features.includes("depth-clamping"),
+        unclippedDepth: this.device.features.includes("depth-clip-control"),
       },
       depthStencil: {
         format: "depth32float",
@@ -661,5 +661,5 @@ const shadow = new Shadow({
     width: 1600,
     height: 1200,
   },
-}, await Shadow.getDevice(["depth-clamping"]));
+}, await Shadow.getDevice(["depth-clip-control"]));
 await shadow.renderPng();

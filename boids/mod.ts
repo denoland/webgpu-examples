@@ -88,7 +88,7 @@ class Boids extends Framework {
       layout: renderPipelineLayout,
       vertex: {
         module: drawShader,
-        entryPoint: "main",
+        entryPoint: "main_vs",
         buffers: [
           {
             arrayStride: 4 * 4,
@@ -120,7 +120,7 @@ class Boids extends Framework {
       },
       fragment: {
         module: drawShader,
-        entryPoint: "main",
+        entryPoint: "main_fs",
         targets: [
           {
             format: "rgba8unorm-srgb",
@@ -211,7 +211,7 @@ class Boids extends Framework {
         {
           view: view,
           storeOp: "store",
-          loadValue: [0, 0, 0, 1],
+          loadValue: "load",
         },
       ],
     });
