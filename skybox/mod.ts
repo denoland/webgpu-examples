@@ -214,7 +214,11 @@ class Skybox extends Framework {
     });
 
     let skyboxFormat!: GPUTextureFormat;
-    if (this.device.features.includes("texture-compression-bc")) {
+    if (this.device.features.includes("texture-compression-astc")) {
+      skyboxFormat = "astc-4x4-unorm-srgb";
+    } else if (this.device.features.includes("texture-compression-etc2")) {
+      skyboxFormat = "etc2-rgb8unorm-srgb";
+    } else if (this.device.features.includes("texture-compression-bc")) {
       skyboxFormat = "bc1-rgba-unorm-srgb";
     } else {
       skyboxFormat = "bgra8unorm-srgb";
@@ -227,13 +231,10 @@ class Skybox extends Framework {
     };
 
     const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!, 1));
-
     const image = Dds.read(
       Deno.readFileSync(
         new URL(
-          skyboxFormat === "bc1-rgba-unorm-srgb"
-            ? "./images/bc1.dds"
-            : "./images/bgra.dds",
+          `./images/${skyboxFormat.split(/[^a-zA-Z12]+/)[0]}.dds`,
           import.meta.url,
         ),
       ),
@@ -367,6 +368,8 @@ const skybox = new Skybox(
     height: 1200,
   },
   await Skybox.getDevice([
+    "texture-compression-astc",
+    "texture-compression-etc2",
     "texture-compression-bc",
   ]),
 );
