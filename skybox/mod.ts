@@ -367,10 +367,12 @@ const skybox = new Skybox(
     width: 1600,
     height: 1200,
   },
-  await Skybox.getDevice([
-    "texture-compression-astc",
-    "texture-compression-etc2",
-    "texture-compression-bc",
-  ]),
+  await Skybox.getDevice({
+    optionalFeatures: [
+      "texture-compression-astc",
+      "texture-compression-etc2",
+      "texture-compression-bc",
+    ],
+  }),
 );
 await skybox.renderPng();

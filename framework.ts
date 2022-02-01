@@ -4,10 +4,19 @@ export class Framework {
   device: GPUDevice;
   dimensions: Dimensions;
 
-  static async getDevice(features: GPUFeatureName[] = []): Promise<GPUDevice> {
+  static async getDevice({
+    requiredFeatures,
+    optionalFeatures,
+  }: {
+    requiredFeatures?: GPUFeatureName[];
+    optionalFeatures?: GPUFeatureName[];
+  } = {}): Promise<GPUDevice> {
     const adapter = await navigator.gpu.requestAdapter();
     const device = await adapter?.requestDevice({
-      requiredFeatures: features,
+      requiredFeatures: (requiredFeatures ?? []).concat(
+        optionalFeatures?.filter((feature) => adapter.features.has(feature)) ??
+          [],
+      ),
     });
 
     if (!device) {

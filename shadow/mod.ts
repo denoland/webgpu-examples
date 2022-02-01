@@ -277,7 +277,8 @@ class Shadow extends Framework {
         indexBuffer: cubeIndexBuffer,
         indexFormat: "uint16",
         indexCount: cubeIndexData.length,
-        uniformOffset: (i + 1) * this.device.limits.minUniformBufferOffsetAlignment,
+        uniformOffset: (i + 1) *
+          this.device.limits.minUniformBufferOffsetAlignment,
       });
     }
 
@@ -577,7 +578,7 @@ class Shadow extends Framework {
       for (let i = 0; i < this.lights.length; i++) {
         this.device.queue.writeBuffer(
           this.lightStorageBuffer,
-          (i * LIGHT_SIZE),
+          i * LIGHT_SIZE,
           lightToRaw(this.lights[i]),
         );
       }
@@ -655,11 +656,16 @@ class Shadow extends Framework {
   }
 }
 
-const shadow = new Shadow({
-  maxLights: 10,
-  dimensions: {
-    width: 1600,
-    height: 1200,
+const shadow = new Shadow(
+  {
+    maxLights: 10,
+    dimensions: {
+      width: 1600,
+      height: 1200,
+    },
   },
-}, await Shadow.getDevice(["depth-clip-control"]));
+  await Shadow.getDevice({
+    requiredFeatures: ["depth-clip-control"],
+  }),
+);
 await shadow.renderPng();

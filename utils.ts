@@ -100,7 +100,7 @@ export async function createPng(
       color: 2,
     },
   );
-   Deno.writeFileSync("./output.png", image);
+  Deno.writeFileSync("./output.png", image);
 
   buffer.unmap();
 }
