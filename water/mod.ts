@@ -33,7 +33,12 @@ function generateMatrices(aspectRatio: number): Matrices {
     gmath.Vector3.zero(),
     gmath.Vector3.up(),
   );
-  const scale = gmath.Matrix4.fromNonuniformScale(8, 1.5, 8);
+  const scale = gmath.Matrix4.from(
+    8, 0, 0, 0,
+    0, 1.5, 0, 0,
+    0, 0, 8, 0,
+    0, 0, 0, 1,
+  );
 
   const flippedView = gmath.Matrix4.lookAtRh(
     new gmath.Vector3(CAMERA.x, -CAMERA.y, CAMERA.z),
@@ -373,10 +378,12 @@ class Water extends Framework {
           {
             format: "rgba8unorm-srgb",
             blend: {
+              // @ts-ignore 1.18.2
               color: {
                 srcFactor: "src-alpha",
                 dstFactor: "one-minus-src-alpha",
               },
+              // @ts-ignore 1.18.2
               alpha: {
                 operation: "max",
                 dstFactor: "one",
@@ -529,3 +536,12 @@ class Water extends Framework {
     }
   }
 }
+
+const water = new Water(
+  {
+    width: 1600,
+    height: 1200,
+  },
+  await Water.getDevice(),
+);
+await water.renderPng();

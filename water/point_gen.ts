@@ -28,7 +28,7 @@ function surroundingHexagonalPoints(
 }
 
 function surroundingPointValuesIter<T>(
-  map: Map<[number, number], T>,
+  map: Map<string, T>,
   x: number,
   y: number,
   forEach: (val: [T, T]) => void,
@@ -45,7 +45,7 @@ function surroundingPointValuesIter<T>(
   ];
 
   slidingWindows(newPoints, 2)
-    .map((x) => [map.get(x[0]), map.get(x[1])])
+    .map((x) => [map.get(JSON.stringify(x[0])), map.get(JSON.stringify(x[1]))])
     .filter(([a, b]) => a !== undefined && b !== undefined)
     .flat()
     // @ts-ignore ts
@@ -72,7 +72,7 @@ export interface TerrainVertex {
 export const TERRAIN_VERTEX_ATTRIBUTES_SIZE = 28;
 
 export class HexTerrainMesh {
-  vertices: Map<[number, number], TerrainVertex>;
+  vertices: Map<string, TerrainVertex>;
   halfSize: number;
 
   constructor(
@@ -94,7 +94,7 @@ export class HexTerrainMesh {
           if (vertex.position.y > max) {
             max = vertex.position.y;
           }
-          map.set([i, j], vertex);
+          map.set(JSON.stringify([i, j]), vertex);
         }
       }
     }
@@ -153,7 +153,7 @@ export class HexTerrainMesh {
 
     for (let i = -this.halfSize; i <= this.halfSize; i++) {
       for (let j = -this.halfSize; j <= this.halfSize; j++) {
-        const p = this.vertices.get([i, j]);
+        const p = this.vertices.get(JSON.stringify([i, j]));
         if (p) {
           surroundingPointValuesIter(
             this.vertices,
@@ -172,7 +172,7 @@ export class HexTerrainMesh {
 export const WATER_VERTEX_ATTRIBUTES_SIZE = 8;
 
 export class HexWaterMesh {
-  vertices: Map<[number, number], [number, number]>;
+  vertices: Map<string, [number, number]>;
   halfSize: number;
 
   constructor(radius: number) {
@@ -189,7 +189,7 @@ export class HexWaterMesh {
         if (Math.hypot(x, z) < radius) {
           const x2 = Math.round(x * 2.0);
           const z2 = Math.round((z / B) * Math.sqrt(2));
-          map.set([i, j], [x2, z2]);
+          map.set(JSON.stringify([i, j]), [x2, z2]);
         }
       }
     }
@@ -240,7 +240,7 @@ export class HexWaterMesh {
     for (let i = -this.halfSize; i <= this.halfSize; i++) {
       for (let j = -this.halfSize; j <= this.halfSize; j++) {
         if ((i - j) % 3 === 0) {
-          const p = this.vertices.get([i, j]);
+          const p = this.vertices.get(JSON.stringify([i, j]));
           if (p) {
             surroundingPointValuesIter(
               this.vertices,
