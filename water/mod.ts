@@ -128,6 +128,7 @@ function initializeResources(
   const depthView = drawDepthBuffer.createView();
 
   const waterBindGroup = device.createBindGroup({
+    label: "Water Bind Group",
     layout: waterBindGroupLayout,
     entries: [
       {

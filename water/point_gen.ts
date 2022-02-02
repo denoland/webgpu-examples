@@ -47,7 +47,6 @@ function surroundingPointValuesIter<T>(
   slidingWindows(newPoints, 2)
     .map((x) => [map.get(JSON.stringify(x[0])), map.get(JSON.stringify(x[1]))])
     .filter(([a, b]) => a !== undefined && b !== undefined)
-    .flat()
     // @ts-ignore ts
     .forEach(forEach);
 }
@@ -80,7 +79,7 @@ export class HexTerrainMesh {
     genVertex: (val: [number, number]) => TerrainVertex,
   ) {
     const width = qGivenR(radius);
-    const halfWidth = (width / 2);
+    const halfWidth = Math.floor(width / 2);
     const map = new Map();
     let max = Infinity;
     for (let i = -halfWidth; i <= halfWidth; i++) {
@@ -99,7 +98,7 @@ export class HexTerrainMesh {
       }
     }
     this.vertices = map;
-    this.halfSize = width / 2;
+    this.halfSize = halfWidth;
   }
 
   makeBufferData(): Uint8Array[] {
@@ -177,7 +176,7 @@ export class HexWaterMesh {
 
   constructor(radius: number) {
     const width = qGivenR(radius);
-    const halfWidth = (width / 2);
+    const halfWidth = Math.floor(width / 2);
     const map = new Map();
 
     for (let i = -halfWidth; i <= halfWidth; i++) {
