@@ -179,7 +179,7 @@ class Water extends Framework {
   async init(): Promise<void> {
     const waterVertices = new HexWaterMesh(SIZE).generatePoints();
     this.waterVertexCount = waterVertices.length;
-    const waterVerticesBuf = new Uint8Array(
+    const waterVerticesBuf = new Int8Array(
       waterVertices.map((buf) => [...buf]).flat(),
     );
 

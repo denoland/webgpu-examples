@@ -44,10 +44,9 @@ function surroundingPointValuesIter<T>(
     points[0],
   ];
 
-  slidingWindows(newPoints, 2)
-    .map((x) => [map.get(JSON.stringify(x[0])), map.get(JSON.stringify(x[1]))])
-    .filter(([a, b]) => a !== undefined && b !== undefined)
-    // @ts-ignore ts
+  (slidingWindows(newPoints, 2)
+    .map((x) => [map.get(JSON.stringify(x[0])), map.get(JSON.stringify(x[1]))] as const)
+    .filter(([a, b]) => a !== undefined && b !== undefined) as [T, T][])
     .forEach(forEach);
 }
 
@@ -188,6 +187,7 @@ export class HexWaterMesh {
         if (Math.hypot(x, z) < radius) {
           const x2 = Math.round(x * 2.0);
           const z2 = Math.round((z / B) * Math.sqrt(2));
+          console.log([i, j], JSON.stringify([i, j]));
           map.set(JSON.stringify([i, j]), [x2, z2]);
         }
       }
@@ -197,8 +197,8 @@ export class HexWaterMesh {
     this.halfSize = halfWidth;
   }
 
-  generatePoints(): Uint8Array[] {
-    let vertices: Uint8Array[] = [];
+  generatePoints(): Int8Array[] {
+    let vertices: Int8Array[] = [];
 
     function calculateDifferences(
       a: [number, number],
@@ -218,20 +218,20 @@ export class HexWaterMesh {
       b: [number, number],
       c: [number, number],
     ) {
+      console.log(a, b, c);
       const bc = calculateDifferences(a, b, c);
       const ca = calculateDifferences(b, c, a);
       const ab = calculateDifferences(c, a, b);
 
       vertices = vertices.concat(
         [[a, bc], [b, ca], [c, ab]].map(([pos, offsets]) => {
-          const u8 = new Uint8Array(WATER_VERTEX_ATTRIBUTES_SIZE);
-          const i16 = new Int16Array(u8.buffer);
+          const i8 = new Int8Array(WATER_VERTEX_ATTRIBUTES_SIZE);
+          const i16 = new Int16Array(i8.buffer);
           i16.set(pos);
 
-          const i8 = new Int8Array(u8.buffer);
           i8.set(offsets, 4);
 
-          return u8;
+          return i8;
         }),
       );
     }
