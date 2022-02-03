@@ -218,7 +218,6 @@ export class HexWaterMesh {
       b: [number, number],
       c: [number, number],
     ) {
-      console.log(a, b, c);
       const bc = calculateDifferences(a, b, c);
       const ca = calculateDifferences(b, c, a);
       const ab = calculateDifferences(c, a, b);
