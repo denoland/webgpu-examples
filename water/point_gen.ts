@@ -80,7 +80,7 @@ export class HexTerrainMesh {
     const width = qGivenR(radius);
     const halfWidth = Math.floor(width / 2);
     const map = new Map();
-    let max = Infinity;
+    let max = Number.MIN_VALUE;
     for (let i = -halfWidth; i <= halfWidth; i++) {
       const xO = i;
       for (let j = -halfWidth; j <= halfWidth; j++) {
@@ -138,7 +138,7 @@ export class HexTerrainMesh {
         [[ap, n1], [m, n1], [p, n1], [m, n2], [bp, n2], [p, n2]].map((
           [pos, normal],
         ) => {
-          const u8 = new Uint8Array(28);
+          const u8 = new Uint8Array(TERRAIN_VERTEX_ATTRIBUTES_SIZE);
           const f32 = new Float32Array(u8.buffer);
           f32.set(pos.toArray());
           f32.set(normal.toArray(), 3);
@@ -187,7 +187,6 @@ export class HexWaterMesh {
         if (Math.hypot(x, z) < radius) {
           const x2 = Math.round(x * 2.0);
           const z2 = Math.round((z / B) * Math.sqrt(2));
-          console.log([i, j], JSON.stringify([i, j]));
           map.set(JSON.stringify([i, j]), [x2, z2]);
         }
       }
@@ -239,7 +238,7 @@ export class HexWaterMesh {
       for (let j = -this.halfSize; j <= this.halfSize; j++) {
         if ((i - j) % 3 === 0) {
           const p = this.vertices.get(JSON.stringify([i, j]));
-          if (p) {
+          if (p !== undefined) {
             surroundingPointValuesIter(
               this.vertices,
               i,

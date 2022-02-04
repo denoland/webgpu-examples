@@ -107,7 +107,7 @@ function initializeResources(
   const reflectionTexture = device.createTexture({
     label: "Reflection Render Texture",
     size: dimensions,
-    format: "rgba8unorm-srgb",
+    format: "bgra8unorm-srgb",
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
@@ -123,6 +123,8 @@ function initializeResources(
   const sampler = device.createSampler({
     label: "Texture Sampler",
     minFilter: "linear",
+    lodMaxClamp: 340282350000000000000000000000000000000,
+    maxAnisotropy: 0,
   });
 
   const depthView = drawDepthBuffer.createView();
@@ -221,7 +223,7 @@ class Water extends Framework {
       };
     });
     const terrainVertices = terrain.makeBufferData();
-    this.terrainVertexCount = waterVertices.length;
+    this.terrainVertexCount = terrainVertices.length;
     const terrainVerticesBuf = new Uint8Array(
       terrainVertices.map((buf) => [...buf]).flat(),
     );
@@ -377,7 +379,7 @@ class Water extends Framework {
         entryPoint: "fs_main",
         targets: [
           {
-            format: "rgba8unorm-srgb",
+            format: "bgra8unorm-srgb",
             blend: {
               // @ts-ignore 1.18.2
               color: {
@@ -399,6 +401,8 @@ class Water extends Framework {
       depthStencil: {
         format: "depth32float",
         depthCompare: "less",
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
     this.terrainPipeline = this.device.createRenderPipeline({
@@ -434,7 +438,7 @@ class Water extends Framework {
         module: terrainModule,
         entryPoint: "fs_main",
         targets: [{
-          format: "rgba8unorm-srgb",
+          format: "bgra8unorm-srgb",
         }],
       },
       primitive: {
@@ -444,6 +448,8 @@ class Water extends Framework {
         format: "depth32float",
         depthWriteEnabled: true,
         depthCompare: "less",
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
   }
@@ -479,6 +485,7 @@ class Water extends Framework {
           depthStoreOp: "store",
           stencilLoadValue: "load",
           stencilStoreOp: "store",
+          stencilReadOnly: true,
         },
       });
       renderPass.setPipeline(this.terrainPipeline);
@@ -503,6 +510,7 @@ class Water extends Framework {
           depthStoreOp: "store",
           stencilLoadValue: "load",
           stencilStoreOp: "store",
+          stencilReadOnly: true,
         },
       });
       renderPass.setPipeline(this.terrainPipeline);
