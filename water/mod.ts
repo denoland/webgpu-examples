@@ -107,7 +107,7 @@ function initializeResources(
   const reflectionTexture = device.createTexture({
     label: "Reflection Render Texture",
     size: dimensions,
-    format: "bgra8unorm-srgb",
+    format: "rgba8unorm-srgb",
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST |
       GPUTextureUsage.RENDER_ATTACHMENT,
   });
@@ -379,14 +379,12 @@ class Water extends Framework {
         entryPoint: "fs_main",
         targets: [
           {
-            format: "bgra8unorm-srgb",
+            format: "rgba8unorm-srgb",
             blend: {
-              // @ts-ignore 1.18.2
               color: {
                 srcFactor: "src-alpha",
                 dstFactor: "one-minus-src-alpha",
               },
-              // @ts-ignore 1.18.2
               alpha: {
                 operation: "max",
                 dstFactor: "one",
@@ -438,7 +436,7 @@ class Water extends Framework {
         module: terrainModule,
         entryPoint: "fs_main",
         targets: [{
-          format: "bgra8unorm-srgb",
+          format: "rgba8unorm-srgb",
         }],
       },
       primitive: {
@@ -535,6 +533,8 @@ class Water extends Framework {
           depthStoreOp: "store",
           stencilLoadValue: "load",
           stencilStoreOp: "store",
+          depthReadOnly: true,
+          stencilReadOnly: true,
         },
       });
       renderPass.setPipeline(this.waterPipeline);
@@ -545,12 +545,14 @@ class Water extends Framework {
     }
   }
 }
-
+const device = await Water.getDevice();
+device.pushErrorScope("validation");
 const water = new Water(
   {
     width: 1600,
     height: 1200,
   },
-  await Water.getDevice(),
+  device,
 );
 await water.renderPng();
+console.log(await device.popErrorScope());

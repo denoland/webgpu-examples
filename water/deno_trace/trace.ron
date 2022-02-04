@@ -194,7 +194,7 @@ CreateTexture(Id(0, 1, Metal), (
     mip_level_count: 1,
     sample_count: 1,
     dimension: r#2d,
-    format: r#bgra8unorm-srgb,
+    format: r#rgba8unorm-srgb,
     usage: 22,
 )),
 CreateTexture(Id(1, 1, Metal), (
@@ -420,7 +420,7 @@ CreateRenderPipeline(
             ),
             targets: [
                 (
-                    format: r#bgra8unorm-srgb,
+                    format: r#rgba8unorm-srgb,
                     blend: Some((
                         color: (
                             srcFactor: r#src-alpha,
@@ -522,7 +522,7 @@ CreateRenderPipeline(
             ),
             targets: [
                 (
-                    format: r#bgra8unorm-srgb,
+                    format: r#rgba8unorm-srgb,
                     blend: None,
                     writeMask: 15,
                 ),
@@ -696,6 +696,91 @@ Submit(1, [
                 read_only: true,
             ),
         )),
+    ),
+    RunRenderPass(
+        base: (
+            label: None,
+            commands: [
+                SetPipeline(Id(0, 1, Metal)),
+                SetBindGroup(
+                    index: 0,
+                    num_dynamic_offsets: 0,
+                    bind_group_id: Id(0, 1, Metal),
+                ),
+                SetVertexBuffer(
+                    slot: 0,
+                    buffer_id: Id(0, 1, Metal),
+                    offset: 0,
+                    size: None,
+                ),
+                Draw(
+                    vertex_count: 17694,
+                    instance_count: 1,
+                    first_vertex: 0,
+                    first_instance: 0,
+                ),
+            ],
+            dynamic_offsets: [],
+            string_data: [],
+            push_constant_data: [],
+        ),
+        target_colors: [
+            (
+                view: Id(3, 1, Metal),
+                resolve_target: None,
+                channel: (
+                    load_op: load,
+                    store_op: store,
+                    clear_value: (
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        a: 0,
+                    ),
+                    read_only: false,
+                ),
+            ),
+        ],
+        target_depth_stencil: Some((
+            view: Id(0, 1, Metal),
+            depth: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+            stencil: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+        )),
+    ),
+    CopyTextureToBuffer(
+        src: (
+            texture: Id(2, 1, Metal),
+            mip_level: 0,
+            origin: (
+                x: 0,
+                y: 0,
+                z: 0,
+            ),
+            aspect: all,
+        ),
+        dst: (
+            buffer: Id(5, 1, Metal),
+            layout: (
+                offset: 0,
+                bytes_per_row: Some(6400),
+                rows_per_image: None,
+            ),
+        ),
+        size: (
+            width: 1600,
+            height: 1200,
+            depthOrArrayLayers: 1,
+        ),
     ),
 ]),
 ]
