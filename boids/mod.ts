@@ -152,10 +152,10 @@ class Boids extends Framework {
 
     const initialParticleData = new Float32Array(4 * this.particleCount);
     for (let i = 0; i < initialParticleData.length; i += 4) {
-      initialParticleData[i] = 2.0 * (Math.random() - 0.5); // posx
-      initialParticleData[i + 1] = 2.0 * (Math.random() - 0.5); // posy
-      initialParticleData[i + 2] = 2.0 * (Math.random() - 0.5) * 0.1; // velx
-      initialParticleData[i + 3] = 2.0 * (Math.random() - 0.5) * 0.1;
+      initialParticleData[i] = (Math.random() * 2 - 1); // posx
+      initialParticleData[i + 1] = (Math.random() * 2 - 1); // posy
+      initialParticleData[i + 2] = (Math.random() * 2 - 1) * 0.1; // velx
+      initialParticleData[i + 3] = (Math.random() * 2 - 1) * 0.1; // vely
     }
 
     for (let i = 0; i < 2; i++) {
@@ -199,10 +199,10 @@ class Boids extends Framework {
     const computePass = encoder.beginComputePass();
     computePass.setPipeline(this.computePipeline);
     computePass.setBindGroup(0, this.particleBindGroups[this.frameNum % 2]);
-    computePass.dispatch(
+    computePass.dispatchWorkgroups(
       Math.ceil(this.particleCount / this.particlesPerGroup),
     );
-    computePass.endPass();
+    computePass.end();
     encoder.popDebugGroup();
 
     encoder.pushDebugGroup("render boids");
@@ -211,7 +211,7 @@ class Boids extends Framework {
         {
           view: view,
           storeOp: "store",
-          loadValue: "load",
+          loadOp: "load",
         },
       ],
     });
@@ -222,7 +222,7 @@ class Boids extends Framework {
     );
     renderPass.setVertexBuffer(1, this.verticesBuffer);
     renderPass.draw(3, this.particleCount);
-    renderPass.endPass();
+    renderPass.end();
     encoder.popDebugGroup();
 
     this.frameNum += 1;
