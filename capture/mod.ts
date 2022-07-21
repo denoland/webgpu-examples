@@ -26,10 +26,11 @@ encoder.beginRenderPass({
     {
       view: texture.createView(),
       storeOp: "store",
-      loadValue: [1, 0, 0, 1],
+      loadOp: "clear",
+      clearValue: [1, 0, 0, 1],
     },
   ],
-}).endPass();
+}).end();
 
 copyToBuffer(encoder, texture, outputBuffer, dimensions);
 
