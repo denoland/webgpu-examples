@@ -117,9 +117,8 @@ export function createBufferInit(
 ): GPUBuffer {
   const contents = new Uint8Array(descriptor.contents);
 
-  const unpaddedSize = contents.byteLength;
-  const padding = 4 - unpaddedSize % 4;
-  const paddedSize = padding + unpaddedSize;
+  const alignMask = 4 - 1;
+  const paddedSize = Math.max(((contents.byteLength + alignMask) & ~alignMask), 4);
 
   const buffer = device.createBuffer({
     label: descriptor.label,

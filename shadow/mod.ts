@@ -171,6 +171,8 @@ class Shadow extends Framework {
   }
 
   async init() {
+    const supportStorageResources = false; //this.device.limits.maxStorageBuffersPerShaderStage > 0;
+
     const shadowSize: GPUExtent3D = {
       width: 512,
       height: 512,
@@ -350,7 +352,7 @@ class Shadow extends Framework {
     const lightUniformSize = this.maxLights * LIGHT_SIZE;
     this.lightStorageBuffer = this.device.createBuffer({
       size: lightUniformSize,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC |
+      usage: (supportStorageResources ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_SRC |
         GPUBufferUsage.COPY_DST,
     });
 
@@ -447,7 +449,7 @@ class Shadow extends Framework {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
           buffer: {
-            type: "read-only-storage",
+            type: supportStorageResources ? "read-only-storage" : "uniform",
             minBindingSize: lightUniformSize,
           },
         },
@@ -476,6 +478,7 @@ class Shadow extends Framework {
     const mxTotal = generateMatrix(
       this.dimensions.width / this.dimensions.height,
     );
+    console.log(mxTotal);
     const buffer = new ArrayBuffer(mxTotal.byteLength + (4 * 4));
     const float32 = new Float32Array(buffer);
     float32.set(mxTotal);
@@ -524,7 +527,7 @@ class Shadow extends Framework {
       },
       fragment: {
         module: shader,
-        entryPoint: "fs_main",
+        entryPoint: supportStorageResources ? "fs_main" : "fs_main_without_storage",
         targets: [
           {
             format: "rgba8unorm-srgb",
@@ -604,9 +607,12 @@ class Shadow extends Framework {
         colorAttachments: [],
         depthStencilAttachment: {
           view: this.lights[i].targetView,
-          depthLoadValue: 1,
+
+          depthClearValue: 1,
+          depthLoadOp: "clear",
           depthStoreOp: "store",
-          stencilLoadValue: "load",
+
+          stencilLoadOp: "load",
           stencilStoreOp: "store",
         },
       });
@@ -621,7 +627,7 @@ class Shadow extends Framework {
         renderPass.setVertexBuffer(0, entity.vertexBuffer);
         renderPass.drawIndexed(entity.indexCount, 1);
       }
-      renderPass.endPass();
+      renderPass.end();
       encoder.popDebugGroup();
     }
     encoder.popDebugGroup();
@@ -631,16 +637,16 @@ class Shadow extends Framework {
       colorAttachments: [
         {
           view: view,
-          loadValue: [0.1, 0.2, 0.3, 1],
           storeOp: "store",
+          loadOp: "clear",
+          clearValue: [0.1, 0.2, 0.3, 1],
         },
       ],
       depthStencilAttachment: {
         view: this.depthTextureView,
-        depthLoadValue: 1,
+        depthClearValue: 1,
+        depthLoadOp: "load",
         depthStoreOp: "discard",
-        stencilLoadValue: "load",
-        stencilStoreOp: "store",
       },
     });
     renderPass.setPipeline(this.forwardPass.pipeline);
@@ -651,7 +657,7 @@ class Shadow extends Framework {
       renderPass.setVertexBuffer(0, entity.vertexBuffer);
       renderPass.drawIndexed(entity.indexCount, 1);
     }
-    renderPass.endPass();
+    renderPass.end();
     encoder.popDebugGroup();
   }
 }
