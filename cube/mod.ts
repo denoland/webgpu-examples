@@ -235,7 +235,8 @@ class Cube extends Framework {
         {
           view: view,
           storeOp: "store",
-          loadValue: [0.1, 0.2, 0.3, 1],
+          loadOp: "clear",
+          clearValue: [0.1, 0.2, 0.3, 1],
         },
       ],
     });
@@ -248,7 +249,7 @@ class Cube extends Framework {
     renderPass.popDebugGroup();
     renderPass.insertDebugMarker("Draw!");
     renderPass.drawIndexed(this.indexCount, 1);
-    renderPass.endPass();
+    renderPass.end();
   }
 }
 
