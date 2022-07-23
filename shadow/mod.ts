@@ -352,7 +352,10 @@ class Shadow extends Framework {
     const lightUniformSize = this.maxLights * LIGHT_SIZE;
     this.lightStorageBuffer = this.device.createBuffer({
       size: lightUniformSize,
-      usage: (supportStorageResources ? GPUBufferUsage.STORAGE : GPUBufferUsage.UNIFORM) | GPUBufferUsage.COPY_SRC |
+      usage: (supportStorageResources
+        ? GPUBufferUsage.STORAGE
+        : GPUBufferUsage.UNIFORM) |
+        GPUBufferUsage.COPY_SRC |
         GPUBufferUsage.COPY_DST,
     });
 
@@ -427,6 +430,8 @@ class Shadow extends Framework {
         depthCompare: "less-equal",
         depthBias: 2,
         depthBiasSlopeScale: 2,
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
 
@@ -526,7 +531,9 @@ class Shadow extends Framework {
       },
       fragment: {
         module: shader,
-        entryPoint: supportStorageResources ? "fs_main" : "fs_main_without_storage",
+        entryPoint: supportStorageResources
+          ? "fs_main"
+          : "fs_main_without_storage",
         targets: [
           {
             format: "rgba8unorm-srgb",
@@ -540,6 +547,8 @@ class Shadow extends Framework {
         format: "depth32float",
         depthWriteEnabled: true,
         depthCompare: "less",
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
 
@@ -645,8 +654,9 @@ class Shadow extends Framework {
       depthStencilAttachment: {
         view: this.depthTextureView,
         depthClearValue: 1,
-        depthLoadOp: "load",
+        depthLoadOp: "clear",
         depthStoreOp: "discard",
+        stencilReadOnly: true,
       },
     });
     renderPass.setPipeline(this.forwardPass.pipeline);
