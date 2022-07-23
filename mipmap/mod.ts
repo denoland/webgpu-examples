@@ -61,11 +61,12 @@ class Mipmap extends Framework {
     this.mipLevelCount = options.mipLevelCount;
   }
 
-  async generateMipmaps(encoder: GPUCommandEncoder, texture: GPUTexture) {
+  generateMipmaps(encoder: GPUCommandEncoder, texture: GPUTexture) {
     const shader = this.device.createShaderModule({
       code: Deno.readTextFileSync(new URL("blit.wgsl", import.meta.url)),
     });
     const pipeline = this.device.createRenderPipeline({
+      layout: "auto",
       label: "blit",
       vertex: {
         module: shader,
@@ -79,13 +80,14 @@ class Mipmap extends Framework {
         }],
       },
       primitive: {
-        topology: "triangle-strip",
+        topology: "triangle-list",
       },
     });
     const bindGroupLayout = pipeline.getBindGroupLayout(0);
     const sampler = this.device.createSampler({
       label: "mip",
       magFilter: "linear",
+      minFilter: "linear",
     });
     const views = [];
     for (let i = 0; i < this.mipLevelCount; i++) {
@@ -116,22 +118,23 @@ class Mipmap extends Framework {
           {
             view: views[i],
             storeOp: "store",
-            loadValue: [1, 1, 1, 1],
+            loadOp: "clear",
+            clearValue: [1, 1, 1, 1],
           },
         ],
       });
 
       renderPass.setPipeline(pipeline);
       renderPass.setBindGroup(0, bindGroup);
-      renderPass.draw(4, 1);
-      renderPass.endPass();
+      renderPass.draw(3, 1);
+      renderPass.end();
     }
   }
 
   async init() {
     const initEncoder = this.device.createCommandEncoder();
 
-    const size = 1 << this.mipLevelCount;
+    const size = 1 << (this.mipLevelCount - 1);
     const texels = createTexels(size, -0.8, 0.156);
     const textureExtent = {
       width: size,
@@ -184,6 +187,7 @@ class Mipmap extends Framework {
     });
 
     this.drawPipeline = this.device.createRenderPipeline({
+      layout: "auto",
       label: "draw",
       vertex: {
         module: shader,
@@ -202,7 +206,7 @@ class Mipmap extends Framework {
       primitive: {
         topology: "triangle-strip",
         cullMode: "back",
-      },
+      }
     });
 
     const bindGroupLayout = this.drawPipeline.getBindGroupLayout(0);
@@ -226,7 +230,7 @@ class Mipmap extends Framework {
       ],
     });
 
-    await this.generateMipmaps(initEncoder, texture);
+    this.generateMipmaps(initEncoder, texture);
 
     this.device.queue.submit([initEncoder.finish()]);
   }
@@ -237,19 +241,20 @@ class Mipmap extends Framework {
         {
           view: view,
           storeOp: "store",
-          loadValue: [0.1, 0.2, 0.3, 1],
+          loadOp: "clear",
+          clearValue: [0.1, 0.2, 0.3, 1],
         },
       ],
     });
     renderPass.setPipeline(this.drawPipeline);
     renderPass.setBindGroup(0, this.bindGroup);
     renderPass.draw(4, 1);
-    renderPass.endPass();
+    renderPass.end();
   }
 }
 
 const mipmap = new Mipmap({
-  mipLevelCount: 9,
+  mipLevelCount: 10,
   dimensions: {
     width: 1600,
     height: 1200,

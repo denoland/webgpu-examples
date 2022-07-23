@@ -1,7 +1,7 @@
 import { Framework } from "../framework.ts";
 import { Dds, gmath, obj } from "../deps.ts";
 import {
-  createBufferInit,
+  createBufferInit, createTextureWithData,
   Dimensions,
   OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
@@ -214,7 +214,7 @@ class Skybox extends Framework {
     });
 
     let skyboxFormat!: GPUTextureFormat;
-    if (this.device.features.includes("texture-compression-astc")) {
+    if (this.device.features.includes("texture-compression-astc") && false) {
       skyboxFormat = "astc-4x4-unorm-srgb";
     } else if (this.device.features.includes("texture-compression-etc2")) {
       skyboxFormat = "etc2-rgb8unorm-srgb";
@@ -230,7 +230,7 @@ class Skybox extends Framework {
       depthOrArrayLayers: 6,
     };
 
-    const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!, 1));
+    const maxMips = 32 - Math.clz32(Math.max(size.width!, size.height!));
     const image = Dds.read(
       Deno.readFileSync(
         new URL(
@@ -240,65 +240,12 @@ class Skybox extends Framework {
       ),
     ).data;
 
-    const texture = this.device.createTexture({
+    const texture = createTextureWithData(this.device, {
       size,
       mipLevelCount: maxMips,
       format: skyboxFormat,
-      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
-    });
-
-    const blockDimensions = skyboxFormat === "bc1-rgba-unorm-srgb"
-      ? [4, 4]
-      : [1, 1];
-    const blockSize = skyboxFormat === "bc1-rgba-unorm-srgb" ? 8 : 4;
-
-    let binaryOffset = 0;
-    for (let i = 0; i < size.depthOrArrayLayers!; i++) {
-      for (let j = 0; j < maxMips; j++) {
-        const mipSize = {
-          width: Math.max(1, size.width! >> j),
-          height: Math.max(1, size.height! >> j),
-          depth: Math.max(1, 1 >> j),
-        };
-
-        const physicalWidth = Math.floor(
-          (mipSize.width + blockDimensions[0] - 1) / blockDimensions[0],
-        ) * blockDimensions[0];
-        const physicalHeight = Math.floor(
-          (mipSize.height + blockDimensions[1] - 1) / blockDimensions[1],
-        ) * blockDimensions[1];
-
-        const widthBlocks = Math.floor(physicalWidth / blockDimensions[0]);
-        const heightBlocks = Math.floor(physicalHeight / blockDimensions[1]);
-        const bytesPerRow = widthBlocks * blockSize;
-        const dataSize = bytesPerRow * heightBlocks;
-        const endOffset = binaryOffset + dataSize;
-
-        this.device.queue.writeTexture(
-          {
-            texture,
-            mipLevel: j,
-            origin: {
-              x: 0,
-              y: 0,
-              z: i,
-            },
-          },
-          image.slice(binaryOffset, endOffset),
-          {
-            bytesPerRow,
-            rowsPerImage: 0,
-          },
-          {
-            width: physicalWidth,
-            height: physicalHeight,
-            depthOrArrayLayers: 1,
-          },
-        );
-
-        binaryOffset = endOffset;
-      }
-    }
+      usage: GPUTextureUsage.TEXTURE_BINDING,
+    }, image);
 
     const textureView = texture.createView({
       dimension: "cube",
@@ -337,14 +284,18 @@ class Skybox extends Framework {
         {
           view: view,
           storeOp: "store",
-          loadValue: [0.1, 0.2, 0.3, 1],
+          loadOp: "clear",
+          clearValue: [0.1, 0.2, 0.3, 1],
         },
       ],
       depthStencilAttachment: {
         view: this.depthView,
-        depthLoadValue: 1,
+
+        depthClearValue: 1,
+        depthLoadOp: "clear",
         depthStoreOp: "discard",
-        stencilLoadValue: "load",
+
+        stencilLoadOp: "load",
         stencilStoreOp: "store",
         stencilReadOnly: true,
       },
@@ -358,7 +309,7 @@ class Skybox extends Framework {
     }
     renderPass.setPipeline(this.skyPipeline);
     renderPass.draw(3);
-    renderPass.endPass();
+    renderPass.end();
   }
 }
 

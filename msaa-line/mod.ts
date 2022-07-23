@@ -130,19 +130,21 @@ class MsaaLine extends Framework {
       ? {
         view: view,
         storeOp: "store",
-        loadValue: [0, 0, 0, 1],
+        loadOp: "clear",
+        clearValue: [0, 0, 0, 1],
       }
       : {
         view: this.multisampledBuffer,
         resolveTarget: view,
-        storeOp: "store",
-        loadValue: [0, 0, 0, 1],
+        storeOp: "discard",
+        loadOp: "clear",
+        clearValue: [0, 0, 0, 1],
       };
     const renderPass = encoder.beginRenderPass({
       colorAttachments: [attachment],
     });
     renderPass.executeBundles([this.bundle]);
-    renderPass.endPass();
+    renderPass.end();
   }
 }
 
