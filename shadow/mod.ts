@@ -478,7 +478,6 @@ class Shadow extends Framework {
     const mxTotal = generateMatrix(
       this.dimensions.width / this.dimensions.height,
     );
-    console.log(mxTotal);
     const buffer = new ArrayBuffer(mxTotal.byteLength + (4 * 4));
     const float32 = new Float32Array(buffer);
     float32.set(mxTotal);
@@ -614,6 +613,7 @@ class Shadow extends Framework {
 
           stencilLoadOp: "load",
           stencilStoreOp: "store",
+          stencilReadOnly: true,
         },
       });
       renderPass.setPipeline(this.shadowPass.pipeline);
