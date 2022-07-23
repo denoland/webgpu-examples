@@ -160,6 +160,8 @@ class Skybox extends Framework {
       depthStencil: {
         format: DEPTH_FORMAT,
         depthCompare: "less-equal",
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
 
@@ -203,6 +205,8 @@ class Skybox extends Framework {
         format: DEPTH_FORMAT,
         depthWriteEnabled: true,
         depthCompare: "less-equal",
+        stencilReadMask: 0,
+        stencilWriteMask: 0,
       },
     });
 
