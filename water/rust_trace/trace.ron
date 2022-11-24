@@ -1,0 +1,771 @@
+[
+Init(
+    desc: (
+        label: None,
+        features: 0,
+        limits: (
+            maxTextureDimension1d: 16384,
+            maxTextureDimension2d: 16384,
+            maxTextureDimension3d: 2048,
+            maxTextureArrayLayers: 256,
+            maxBindGroups: 4,
+            maxDynamicUniformBuffersPerPipelineLayout: 8,
+            maxDynamicStorageBuffersPerPipelineLayout: 0,
+            maxSampledTexturesPerShaderStage: 16,
+            maxSamplersPerShaderStage: 16,
+            maxStorageBuffersPerShaderStage: 0,
+            maxStorageTexturesPerShaderStage: 0,
+            maxUniformBuffersPerShaderStage: 11,
+            maxUniformBufferBindingSize: 16384,
+            maxStorageBufferBindingSize: 0,
+            maxVertexBuffers: 8,
+            maxVertexAttributes: 16,
+            maxVertexBufferArrayStride: 255,
+            maxPushConstantSize: 0,
+            minUniformBufferOffsetAlignment: 256,
+            minStorageBufferOffsetAlignment: 256,
+            maxInterStageShaderComponents: 60,
+            maxComputeWorkgroupStorageSize: 0,
+            maxComputeInvocationsPerWorkgroup: 0,
+            maxComputeWorkgroupSizeX: 0,
+            maxComputeWorkgroupSizeY: 0,
+            maxComputeWorkgroupSizeZ: 0,
+            maxComputeWorkgroupsPerDimension: 0,
+        ),
+    ),
+    backend: Metal,
+),
+ConfigureSurface(Id(0, 1, Empty), (
+    usage: 16,
+    format: r#bgra8unorm-srgb,
+    width: 1600,
+    height: 1200,
+    present_mode: Mailbox,
+)),
+CreateBuffer(Id(0, 1, Metal), (
+    label: Some("Water vertices"),
+    size: 141840,
+    usage: 40,
+    mapped_at_creation: false,
+)),
+WriteBuffer(
+    id: Id(0, 1, Metal),
+    data: "data1.bin",
+    range: (
+        start: 0,
+        end: 141840,
+    ),
+    queued: true,
+),
+CreateBuffer(Id(1, 1, Metal), (
+    label: Some("Terrain vertices"),
+    size: 2978640,
+    usage: 40,
+    mapped_at_creation: false,
+)),
+WriteBuffer(
+    id: Id(1, 1, Metal),
+    data: "data2.bin",
+    range: (
+        start: 0,
+        end: 2978640,
+    ),
+    queued: true,
+),
+CreateBindGroupLayout(Id(0, 1, Metal), (
+    label: Some("Water Bind Group Layout"),
+    entries: [
+        (
+            binding: 0,
+            visibility: 3,
+            ty: Buffer(
+                ty: Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: Some(160),
+            ),
+            count: None,
+        ),
+        (
+            binding: 1,
+            visibility: 2,
+            ty: Texture(
+                sample_type: Float(
+                    filterable: true,
+                ),
+                view_dimension: r#2d,
+                multisampled: false,
+            ),
+            count: None,
+        ),
+        (
+            binding: 2,
+            visibility: 2,
+            ty: Texture(
+                sample_type: Float(
+                    filterable: true,
+                ),
+                view_dimension: r#2d,
+                multisampled: false,
+            ),
+            count: None,
+        ),
+        (
+            binding: 3,
+            visibility: 2,
+            ty: Sampler(filtering),
+            count: None,
+        ),
+    ],
+)),
+CreateBindGroupLayout(Id(1, 1, Metal), (
+    label: Some("Terrain Bind Group Layout"),
+    entries: [
+        (
+            binding: 0,
+            visibility: 1,
+            ty: Buffer(
+                ty: Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: Some(80),
+            ),
+            count: None,
+        ),
+    ],
+)),
+CreatePipelineLayout(Id(0, 1, Metal), (
+    label: Some("water"),
+    bind_group_layouts: [
+        Id(0, 1, Metal),
+    ],
+    push_constant_ranges: [],
+)),
+CreatePipelineLayout(Id(1, 1, Metal), (
+    label: Some("terrain"),
+    bind_group_layouts: [
+        Id(1, 1, Metal),
+    ],
+    push_constant_ranges: [],
+)),
+CreateBuffer(Id(2, 1, Metal), (
+    label: Some("Water Uniforms"),
+    size: 160,
+    usage: 72,
+    mapped_at_creation: false,
+)),
+CreateBuffer(Id(3, 1, Metal), (
+    label: Some("Normal Terrain Uniforms"),
+    size: 80,
+    usage: 72,
+    mapped_at_creation: false,
+)),
+CreateBuffer(Id(4, 1, Metal), (
+    label: Some("Flipped Terrain Uniforms"),
+    size: 80,
+    usage: 72,
+    mapped_at_creation: false,
+)),
+WriteBuffer(
+    id: Id(3, 1, Metal),
+    data: "data3.bin",
+    range: (
+        start: 0,
+        end: 80,
+    ),
+    queued: true,
+),
+WriteBuffer(
+    id: Id(4, 1, Metal),
+    data: "data4.bin",
+    range: (
+        start: 0,
+        end: 80,
+    ),
+    queued: true,
+),
+WriteBuffer(
+    id: Id(2, 1, Metal),
+    data: "data5.bin",
+    range: (
+        start: 0,
+        end: 160,
+    ),
+    queued: true,
+),
+CreateTexture(Id(0, 1, Metal), (
+    label: Some("Reflection Render Texture"),
+    size: (
+        width: 1600,
+        height: 1200,
+        depthOrArrayLayers: 1,
+    ),
+    mip_level_count: 1,
+    sample_count: 1,
+    dimension: r#2d,
+    format: r#bgra8unorm-srgb,
+    usage: 22,
+)),
+CreateTexture(Id(1, 1, Metal), (
+    label: Some("Depth Buffer"),
+    size: (
+        width: 1600,
+        height: 1200,
+        depthOrArrayLayers: 1,
+    ),
+    mip_level_count: 1,
+    sample_count: 1,
+    dimension: r#2d,
+    format: depth32float,
+    usage: 22,
+)),
+CreateSampler(Id(0, 1, Metal), (
+    label: Some("Texture Sampler"),
+    address_modes: (r#clamp-to-edge, r#clamp-to-edge, r#clamp-to-edge),
+    mag_filter: nearest,
+    min_filter: linear,
+    mipmap_filter: nearest,
+    lod_min_clamp: 0,
+    lod_max_clamp: 340282350000000000000000000000000000000,
+    compare: None,
+    anisotropy_clamp: None,
+    border_color: None,
+)),
+CreateTextureView(
+    id: Id(0, 1, Metal),
+    parent_id: Id(1, 1, Metal),
+    desc: (
+        label: None,
+        format: None,
+        dimension: None,
+        range: (
+            aspect: all,
+            base_mip_level: 0,
+            mip_level_count: None,
+            base_array_layer: 0,
+            array_layer_count: None,
+        ),
+    ),
+),
+CreateTextureView(
+    id: Id(1, 1, Metal),
+    parent_id: Id(0, 1, Metal),
+    desc: (
+        label: None,
+        format: None,
+        dimension: None,
+        range: (
+            aspect: all,
+            base_mip_level: 0,
+            mip_level_count: None,
+            base_array_layer: 0,
+            array_layer_count: None,
+        ),
+    ),
+),
+CreateBindGroup(Id(0, 1, Metal), (
+    label: Some("Water Bind Group"),
+    layout: Id(0, 1, Metal),
+    entries: [
+        (
+            binding: 0,
+            resource: Buffer((
+                buffer_id: Id(2, 1, Metal),
+                offset: 0,
+                size: None,
+            )),
+        ),
+        (
+            binding: 1,
+            resource: TextureView(Id(1, 1, Metal)),
+        ),
+        (
+            binding: 2,
+            resource: TextureView(Id(0, 1, Metal)),
+        ),
+        (
+            binding: 3,
+            resource: Sampler(Id(0, 1, Metal)),
+        ),
+    ],
+)),
+CreateTextureView(
+    id: Id(2, 1, Metal),
+    parent_id: Id(0, 1, Metal),
+    desc: (
+        label: None,
+        format: None,
+        dimension: None,
+        range: (
+            aspect: all,
+            base_mip_level: 0,
+            mip_level_count: None,
+            base_array_layer: 0,
+            array_layer_count: None,
+        ),
+    ),
+),
+CreateBindGroup(Id(1, 1, Metal), (
+    label: Some("Terrain Normal Bind Group"),
+    layout: Id(1, 1, Metal),
+    entries: [
+        (
+            binding: 0,
+            resource: Buffer((
+                buffer_id: Id(3, 1, Metal),
+                offset: 0,
+                size: None,
+            )),
+        ),
+    ],
+)),
+CreateBindGroup(Id(2, 1, Metal), (
+    label: Some("Terrain Flipped Bind Group"),
+    layout: Id(1, 1, Metal),
+    entries: [
+        (
+            binding: 0,
+            resource: Buffer((
+                buffer_id: Id(4, 1, Metal),
+                offset: 0,
+                size: None,
+            )),
+        ),
+    ],
+)),
+CreateShaderModule(
+    id: Id(0, 1, Metal),
+    desc: (
+        label: Some("terrain"),
+        shader_bound_checks: (
+            runtime_checks: true,
+        ),
+    ),
+    data: "data6.wgsl",
+),
+CreateShaderModule(
+    id: Id(1, 1, Metal),
+    desc: (
+        label: Some("water"),
+        shader_bound_checks: (
+            runtime_checks: true,
+        ),
+    ),
+    data: "data7.wgsl",
+),
+CreateRenderPipeline(
+    id: Id(0, 1, Metal),
+    desc: (
+        label: Some("water"),
+        layout: Some(Id(0, 1, Metal)),
+        vertex: (
+            stage: (
+                module: Id(1, 1, Metal),
+                entry_point: "vs_main",
+            ),
+            buffers: [
+                (
+                    arrayStride: 8,
+                    stepMode: vertex,
+                    attributes: [
+                        (
+                            format: sint16x2,
+                            offset: 0,
+                            shaderLocation: 0,
+                        ),
+                        (
+                            format: sint8x4,
+                            offset: 4,
+                            shaderLocation: 1,
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        primitive: (
+            topology: r#triangle-list,
+            stripIndexFormat: None,
+            frontFace: cw,
+            cullMode: None,
+            unclippedDepth: false,
+            polygonMode: fill,
+            conservative: false,
+        ),
+        depth_stencil: Some((
+            format: depth32float,
+            depth_write_enabled: false,
+            depth_compare: less,
+            stencil: (
+                front: (
+                    compare: always,
+                    failOp: keep,
+                    depthFailOp: keep,
+                    passOp: keep,
+                ),
+                back: (
+                    compare: always,
+                    failOp: keep,
+                    depthFailOp: keep,
+                    passOp: keep,
+                ),
+                read_mask: 0,
+                write_mask: 0,
+            ),
+            bias: (
+                constant: 0,
+                slope_scale: 0,
+                clamp: 0,
+            ),
+        )),
+        multisample: (
+            count: 1,
+            mask: 18446744073709551615,
+            alphaToCoverageEnabled: false,
+        ),
+        fragment: Some((
+            stage: (
+                module: Id(1, 1, Metal),
+                entry_point: "fs_main",
+            ),
+            targets: [
+                (
+                    format: r#bgra8unorm-srgb,
+                    blend: Some((
+                        color: (
+                            srcFactor: r#src-alpha,
+                            dstFactor: r#one-minus-src-alpha,
+                            operation: add,
+                        ),
+                        alpha: (
+                            srcFactor: one,
+                            dstFactor: one,
+                            operation: max,
+                        ),
+                    )),
+                    writeMask: 15,
+                ),
+            ],
+        )),
+        multiview: None,
+    ),
+    implicit_context: None,
+),
+CreateRenderPipeline(
+    id: Id(1, 1, Metal),
+    desc: (
+        label: Some("terrain"),
+        layout: Some(Id(1, 1, Metal)),
+        vertex: (
+            stage: (
+                module: Id(0, 1, Metal),
+                entry_point: "vs_main",
+            ),
+            buffers: [
+                (
+                    arrayStride: 28,
+                    stepMode: vertex,
+                    attributes: [
+                        (
+                            format: float32x3,
+                            offset: 0,
+                            shaderLocation: 0,
+                        ),
+                        (
+                            format: float32x3,
+                            offset: 12,
+                            shaderLocation: 1,
+                        ),
+                        (
+                            format: unorm8x4,
+                            offset: 24,
+                            shaderLocation: 2,
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        primitive: (
+            topology: r#triangle-list,
+            stripIndexFormat: None,
+            frontFace: ccw,
+            cullMode: Some(front),
+            unclippedDepth: false,
+            polygonMode: fill,
+            conservative: false,
+        ),
+        depth_stencil: Some((
+            format: depth32float,
+            depth_write_enabled: true,
+            depth_compare: less,
+            stencil: (
+                front: (
+                    compare: always,
+                    failOp: keep,
+                    depthFailOp: keep,
+                    passOp: keep,
+                ),
+                back: (
+                    compare: always,
+                    failOp: keep,
+                    depthFailOp: keep,
+                    passOp: keep,
+                ),
+                read_mask: 0,
+                write_mask: 0,
+            ),
+            bias: (
+                constant: 0,
+                slope_scale: 0,
+                clamp: 0,
+            ),
+        )),
+        multisample: (
+            count: 1,
+            mask: 18446744073709551615,
+            alphaToCoverageEnabled: false,
+        ),
+        fragment: Some((
+            stage: (
+                module: Id(0, 1, Metal),
+                entry_point: "fs_main",
+            ),
+            targets: [
+                (
+                    format: r#bgra8unorm-srgb,
+                    blend: None,
+                    writeMask: 15,
+                ),
+            ],
+        )),
+        multiview: None,
+    ),
+    implicit_context: None,
+),
+DestroyShaderModule(Id(1, 1, Metal)),
+DestroyShaderModule(Id(0, 1, Metal)),
+GetSurfaceTexture(
+    id: Id(2, 1, Metal),
+    parent_id: Id(0, 1, Empty),
+),
+CreateTextureView(
+    id: Id(3, 1, Metal),
+    parent_id: Id(2, 1, Metal),
+    desc: (
+        label: None,
+        format: None,
+        dimension: None,
+        range: (
+            aspect: all,
+            base_mip_level: 0,
+            mip_level_count: None,
+            base_array_layer: 0,
+            array_layer_count: None,
+        ),
+    ),
+),
+WriteBuffer(
+    id: Id(2, 1, Metal),
+    data: "data8.bin",
+    range: (
+        start: 128,
+        end: 136,
+    ),
+    queued: true,
+),
+Submit(1, [
+    RunRenderPass(
+        base: (
+            label: None,
+            commands: [
+                SetPipeline(Id(1, 1, Metal)),
+                SetBindGroup(
+                    index: 0,
+                    num_dynamic_offsets: 0,
+                    bind_group_id: Id(2, 1, Metal),
+                ),
+                SetVertexBuffer(
+                    slot: 0,
+                    buffer_id: Id(1, 1, Metal),
+                    offset: 0,
+                    size: None,
+                ),
+                Draw(
+                    vertex_count: 106380,
+                    instance_count: 1,
+                    first_vertex: 0,
+                    first_instance: 0,
+                ),
+            ],
+            dynamic_offsets: [],
+            string_data: [],
+            push_constant_data: [],
+        ),
+        target_colors: [
+            (
+                view: Id(2, 1, Metal),
+                resolve_target: None,
+                channel: (
+                    load_op: clear,
+                    store_op: store,
+                    clear_value: (
+                        r: 0.6313725490196078,
+                        g: 0.9647058823529412,
+                        b: 1,
+                        a: 1,
+                    ),
+                    read_only: false,
+                ),
+            ),
+        ],
+        target_depth_stencil: Some((
+            view: Id(0, 1, Metal),
+            depth: (
+                load_op: clear,
+                store_op: store,
+                clear_value: 1,
+                read_only: false,
+            ),
+            stencil: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+        )),
+    ),
+    RunRenderPass(
+        base: (
+            label: None,
+            commands: [
+                SetPipeline(Id(1, 1, Metal)),
+                SetBindGroup(
+                    index: 0,
+                    num_dynamic_offsets: 0,
+                    bind_group_id: Id(1, 1, Metal),
+                ),
+                SetVertexBuffer(
+                    slot: 0,
+                    buffer_id: Id(1, 1, Metal),
+                    offset: 0,
+                    size: None,
+                ),
+                Draw(
+                    vertex_count: 106380,
+                    instance_count: 1,
+                    first_vertex: 0,
+                    first_instance: 0,
+                ),
+            ],
+            dynamic_offsets: [],
+            string_data: [],
+            push_constant_data: [],
+        ),
+        target_colors: [
+            (
+                view: Id(3, 1, Metal),
+                resolve_target: None,
+                channel: (
+                    load_op: clear,
+                    store_op: store,
+                    clear_value: (
+                        r: 0.6313725490196078,
+                        g: 0.9647058823529412,
+                        b: 1,
+                        a: 1,
+                    ),
+                    read_only: false,
+                ),
+            ),
+        ],
+        target_depth_stencil: Some((
+            view: Id(0, 1, Metal),
+            depth: (
+                load_op: clear,
+                store_op: store,
+                clear_value: 1,
+                read_only: false,
+            ),
+            stencil: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+        )),
+    ),
+    RunRenderPass(
+        base: (
+            label: None,
+            commands: [
+                SetPipeline(Id(0, 1, Metal)),
+                SetBindGroup(
+                    index: 0,
+                    num_dynamic_offsets: 0,
+                    bind_group_id: Id(0, 1, Metal),
+                ),
+                SetVertexBuffer(
+                    slot: 0,
+                    buffer_id: Id(0, 1, Metal),
+                    offset: 0,
+                    size: None,
+                ),
+                Draw(
+                    vertex_count: 17730,
+                    instance_count: 1,
+                    first_vertex: 0,
+                    first_instance: 0,
+                ),
+            ],
+            dynamic_offsets: [],
+            string_data: [],
+            push_constant_data: [],
+        ),
+        target_colors: [
+            (
+                view: Id(3, 1, Metal),
+                resolve_target: None,
+                channel: (
+                    load_op: load,
+                    store_op: store,
+                    clear_value: (
+                        r: 0,
+                        g: 0,
+                        b: 0,
+                        a: 0,
+                    ),
+                    read_only: false,
+                ),
+            ),
+        ],
+        target_depth_stencil: Some((
+            view: Id(0, 1, Metal),
+            depth: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+            stencil: (
+                load_op: load,
+                store_op: store,
+                clear_value: 0,
+                read_only: true,
+            ),
+        )),
+    ),
+]),
+Present(Id(0, 1, Empty)),
+DestroyBindGroup(Id(2, 1, Metal)),
+DestroyBindGroup(Id(1, 1, Metal)),
+DestroyBindGroup(Id(0, 1, Metal)),
+DestroyTextureView(Id(3, 1, Metal)),
+DestroyTextureView(Id(2, 1, Metal)),
+DestroyTextureView(Id(0, 1, Metal)),
+DestroyTextureView(Id(1, 1, Metal)),
+DestroyTexture(Id(0, 1, Metal)),
+DestroyTexture(Id(1, 1, Metal)),
+DestroySampler(Id(0, 1, Metal)),
+DestroyBuffer(Id(0, 1, Metal)),
+DestroyBuffer(Id(2, 1, Metal)),
+DestroyBuffer(Id(1, 1, Metal)),
+DestroyBuffer(Id(3, 1, Metal)),
+DestroyBuffer(Id(4, 1, Metal)),
+]
