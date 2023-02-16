@@ -1,7 +1,8 @@
 import { Framework } from "../framework.ts";
 import { Dds, gmath, obj } from "../deps.ts";
 import {
-  createBufferInit, createTextureWithData,
+  createBufferInit,
+  createTextureWithData,
   Dimensions,
   OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
@@ -218,11 +219,12 @@ class Skybox extends Framework {
     });
 
     let skyboxFormat!: GPUTextureFormat;
-    if (this.device.features.includes("texture-compression-astc") && false) {
+    // deno-lint-ignore no-constant-condition
+    if (this.device.features.has("texture-compression-astc") && false) {
       skyboxFormat = "astc-4x4-unorm-srgb";
-    } else if (this.device.features.includes("texture-compression-etc2")) {
+    } else if (this.device.features.has("texture-compression-etc2")) {
       skyboxFormat = "etc2-rgb8unorm-srgb";
-    } else if (this.device.features.includes("texture-compression-bc")) {
+    } else if (this.device.features.has("texture-compression-bc")) {
       skyboxFormat = "bc1-rgba-unorm-srgb";
     } else {
       skyboxFormat = "bgra8unorm-srgb";

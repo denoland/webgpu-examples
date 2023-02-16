@@ -170,6 +170,7 @@ class Shadow extends Framework {
     this.maxLights = options.maxLights;
   }
 
+  // deno-lint-ignore require-await
   async init() {
     const supportStorageResources = false; //this.device.limits.maxStorageBuffersPerShaderStage > 0;
 
@@ -245,7 +246,7 @@ class Shadow extends Framework {
     const entityUniformSize = (4 * 4 * 4) + (4 * 4);
     const numEntities = 1 + cubeDescs.length;
     this.entityUniformBuffer = this.device.createBuffer({
-      size: numEntities * this.device.limits.minUniformBufferOffsetAlignment,
+      size: numEntities * this.device.limits.minUniformBufferOffsetAlignment!,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
@@ -280,7 +281,7 @@ class Shadow extends Framework {
         indexFormat: "uint16",
         indexCount: cubeIndexData.length,
         uniformOffset: (i + 1) *
-          this.device.limits.minUniformBufferOffsetAlignment,
+          this.device.limits.minUniformBufferOffsetAlignment!,
       });
     }
 
@@ -422,7 +423,7 @@ class Shadow extends Framework {
       },
       primitive: {
         cullMode: "back",
-        unclippedDepth: this.device.features.includes("depth-clip-control"),
+        unclippedDepth: this.device.features.has("depth-clip-control"),
       },
       depthStencil: {
         format: "depth32float",

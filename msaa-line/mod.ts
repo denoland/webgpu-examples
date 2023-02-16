@@ -78,6 +78,7 @@ class MsaaLine extends Framework {
     });
   }
 
+  // deno-lint-ignore require-await
   async init() {
     const shader = this.device.createShaderModule({
       code: Deno.readTextFileSync(new URL("./shader.wgsl", import.meta.url)),

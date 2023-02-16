@@ -12,10 +12,12 @@ export class Framework {
     optionalFeatures?: GPUFeatureName[];
   } = {}): Promise<GPUDevice> {
     const adapter = await navigator.gpu.requestAdapter();
-    const device = await adapter?.requestDevice({
+    if (adapter === null) throw new Error(`Could not find adapter`);
+    const device = await adapter.requestDevice({
       requiredFeatures: (requiredFeatures ?? []).concat(
-        optionalFeatures?.filter((feature) => adapter.features.has(feature)) ??
-          [],
+        optionalFeatures?.filter((feature) =>
+          adapter.features ? adapter.features.has(feature) : false
+        ) ?? [],
       ),
     });
 

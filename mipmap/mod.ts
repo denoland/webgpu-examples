@@ -131,6 +131,7 @@ class Mipmap extends Framework {
     }
   }
 
+  // deno-lint-ignore require-await
   async init() {
     const initEncoder = this.device.createCommandEncoder();
 
@@ -206,7 +207,7 @@ class Mipmap extends Framework {
       primitive: {
         topology: "triangle-strip",
         cullMode: "back",
-      }
+      },
     });
 
     const bindGroupLayout = this.drawPipeline.getBindGroupLayout(0);

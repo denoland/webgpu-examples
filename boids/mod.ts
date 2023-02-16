@@ -24,6 +24,7 @@ class Boids extends Framework {
     this.particlesPerGroup = options.particlesPerGroup;
   }
 
+  // deno-lint-ignore require-await
   async init() {
     const computeShader = this.device.createShaderModule({
       code: Deno.readTextFileSync(new URL("./compute.wgsl", import.meta.url)),
@@ -152,8 +153,8 @@ class Boids extends Framework {
 
     const initialParticleData = new Float32Array(4 * this.particleCount);
     for (let i = 0; i < initialParticleData.length; i += 4) {
-      initialParticleData[i] = (Math.random() * 2 - 1); // posx
-      initialParticleData[i + 1] = (Math.random() * 2 - 1); // posy
+      initialParticleData[i] = Math.random() * 2 - 1; // posx
+      initialParticleData[i + 1] = Math.random() * 2 - 1; // posy
       initialParticleData[i + 2] = (Math.random() * 2 - 1) * 0.1; // velx
       initialParticleData[i + 3] = (Math.random() * 2 - 1) * 0.1; // vely
     }
