@@ -1,5 +1,5 @@
 import { Framework } from "../framework.ts";
-import { gmath } from "../deps.ts";
+import * as gmath from "gmath";
 import {
   createBufferInit,
   Dimensions,

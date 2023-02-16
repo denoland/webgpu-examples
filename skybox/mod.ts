@@ -1,5 +1,7 @@
 import { Framework } from "../framework.ts";
-import { Dds, gmath, obj } from "../deps.ts";
+import * as gmath from "gmath";
+import { Dds } from "dds";
+import * as obj from "obj";
 import {
   createBufferInit,
   createTextureWithData,

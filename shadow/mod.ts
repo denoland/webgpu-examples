@@ -4,7 +4,7 @@ import {
   Dimensions,
   OPENGL_TO_WGPU_MATRIX,
 } from "../utils.ts";
-import { gmath } from "../deps.ts";
+import * as gmath from "gmath";
 
 function vertex(
   pos: [number, number, number],
