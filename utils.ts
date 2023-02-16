@@ -118,7 +118,10 @@ export function createBufferInit(
   const contents = new Uint8Array(descriptor.contents);
 
   const alignMask = 4 - 1;
-  const paddedSize = Math.max(((contents.byteLength + alignMask) & ~alignMask), 4);
+  const paddedSize = Math.max(
+    (contents.byteLength + alignMask) & ~alignMask,
+    4,
+  );
 
   const buffer = device.createBuffer({
     label: descriptor.label,
@@ -132,7 +135,9 @@ export function createBufferInit(
   return buffer;
 }
 
-function textureDimensionArrayLayerCount(texture: GPUTextureDescriptor): number {
+function textureDimensionArrayLayerCount(
+  texture: GPUTextureDescriptor,
+): number {
   switch (texture.dimension) {
     case "1d":
     case "3d":
@@ -156,13 +161,23 @@ interface TextureFormatInfo {
   components: number;
 }
 
-const basic = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING;
+const basic = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
+  GPUTextureUsage.TEXTURE_BINDING;
 const attachment = basic | GPUTextureUsage.RENDER_ATTACHMENT;
 const storage = basic | GPUTextureUsage.STORAGE_BINDING;
-const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT;
+const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
+  GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING |
+  GPUTextureUsage.RENDER_ATTACHMENT;
 
 function describeTextureFormat(format: GPUTextureFormat): TextureFormatInfo {
-  let info: [requiredFeatures: GPUFeatureName | undefined, sampleType: GPUTextureSampleType, usage: number, blockDimensions: [number, number], blockSize: number, components: number];
+  let info: [
+    requiredFeatures: GPUFeatureName | undefined,
+    sampleType: GPUTextureSampleType,
+    usage: number,
+    blockDimensions: [number, number],
+    blockSize: number,
+    components: number,
+  ] | [];
 
   switch (format) {
     case "r8unorm":
@@ -281,10 +296,10 @@ function describeTextureFormat(format: GPUTextureFormat): TextureFormatInfo {
       break;
 
     case "stencil8": // TODO
-      info = []
+      info = [];
       break;
     case "depth16unorm": // TODO
-      info = []
+      info = [];
       break;
     case "depth24plus":
       info = [undefined, "depth", attachment, [1, 1], 4, 1];
@@ -294,9 +309,6 @@ function describeTextureFormat(format: GPUTextureFormat): TextureFormatInfo {
       break;
     case "depth32float":
       info = [undefined, "depth", attachment, [1, 1], 4, 1];
-      break;
-    case "depth24unorm-stencil8":
-      info = ["depth24unorm-stencil8", "depth", attachment, [1, 1], 4, 2];
       break;
     case "depth32float-stencil8":
       info = ["depth32float-stencil8", "depth", attachment, [1, 1], 4, 2];
@@ -464,11 +476,11 @@ function describeTextureFormat(format: GPUTextureFormat): TextureFormatInfo {
 
   return {
     requiredFeature: info[0],
-    sampleType: info[1],
-    usage: info[2],
-    blockDimensions: info[3],
-    blockSize: info[4],
-    components: info[5],
+    sampleType: info[1]!,
+    usage: info[2]!,
+    blockDimensions: info[3]!,
+    blockSize: info[4]!,
+    components: info[5]!,
   };
 }
 
@@ -478,41 +490,61 @@ function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
       width: size[0],
       height: size[1],
       depthOrArrayLayers: size[2],
-    }
+    };
   } else {
     return size;
   }
 }
 
-function extent3DPhysicalSize(size: GPUExtent3D, format: GPUTextureFormat): GPUExtent3DDict {
-  const [blockWidth, blockHeight] = describeTextureFormat(format).blockDimensions;
+function extent3DPhysicalSize(
+  size: GPUExtent3D,
+  format: GPUTextureFormat,
+): GPUExtent3DDict {
+  const [blockWidth, blockHeight] =
+    describeTextureFormat(format).blockDimensions;
   const nSize = normalizeExtent3D(size);
 
-  const width = Math.floor((nSize.width + blockWidth - 1) / blockWidth) * blockWidth;
-  const height = Math.floor(((nSize.height ?? 1) + blockHeight - 1) / blockHeight) * blockHeight;
+  const width = Math.floor((nSize.width + blockWidth - 1) / blockWidth) *
+    blockWidth;
+  const height =
+    Math.floor(((nSize.height ?? 1) + blockHeight - 1) / blockHeight) *
+    blockHeight;
 
   return {
     width,
     height,
     depthOrArrayLayers: nSize.depthOrArrayLayers,
-  }
+  };
 }
 
-function extent3DMipLevelSize(size: GPUExtent3D, level: number, is3D: boolean): GPUExtent3DDict {
+function extent3DMipLevelSize(
+  size: GPUExtent3D,
+  level: number,
+  is3D: boolean,
+): GPUExtent3DDict {
   const nSize = normalizeExtent3D(size);
   return {
     height: Math.max(1, nSize.width >> level),
     width: Math.max(1, (nSize.height ?? 1) >> level),
-    depthOrArrayLayers: is3D ? Math.max(1, (nSize.depthOrArrayLayers ?? 1) >> level) : (nSize.depthOrArrayLayers ?? 1),
-  }
+    depthOrArrayLayers: is3D
+      ? Math.max(1, (nSize.depthOrArrayLayers ?? 1) >> level)
+      : (nSize.depthOrArrayLayers ?? 1),
+  };
 }
 
-function textureMipLevelSize(descriptor: GPUTextureDescriptor, level: number): GPUExtent3DDict | undefined {
+function textureMipLevelSize(
+  descriptor: GPUTextureDescriptor,
+  level: number,
+): GPUExtent3DDict | undefined {
   if (level >= (descriptor.mipLevelCount ?? 1)) {
     return undefined;
   }
 
-  return extent3DMipLevelSize(descriptor.size, level, descriptor.dimension === "3d");
+  return extent3DMipLevelSize(
+    descriptor.size,
+    level,
+    descriptor.dimension === "3d",
+  );
 }
 
 export function createTextureWithData(
@@ -534,8 +566,12 @@ export function createTextureWithData(
       }
 
       const mipPhysical = extent3DPhysicalSize(mipSize, descriptor.format);
-      const widthBlocks = Math.floor(mipPhysical.width / formatInfo.blockDimensions[0]);
-      const heightBlocks = Math.floor(mipPhysical.height! / formatInfo.blockDimensions[1]);
+      const widthBlocks = Math.floor(
+        mipPhysical.width / formatInfo.blockDimensions[0],
+      );
+      const heightBlocks = Math.floor(
+        mipPhysical.height! / formatInfo.blockDimensions[1],
+      );
 
       const bytesPerRow = widthBlocks * formatInfo.blockSize;
       const dataSize = bytesPerRow * heightBlocks * mipSize.depthOrArrayLayers!;

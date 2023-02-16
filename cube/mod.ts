@@ -97,6 +97,7 @@ class Cube extends Framework {
   vertexBuffer!: GPUBuffer;
   indexCount!: number;
 
+  // deno-lint-ignore require-await
   async init() {
     const { vertexData, indexData } = createVertices();
     this.indexCount = indexData.length;
