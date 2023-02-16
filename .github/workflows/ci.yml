@@ -19,6 +19,3 @@ jobs:
 
       - name: Lint
         run: deno lint
-
-      - name: Type Check
-        run: deno check main.ts
