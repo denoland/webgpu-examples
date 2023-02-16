@@ -1,4 +1,4 @@
-import { gmath } from "../deps.ts";
+import * as gmath from "gmath";
 import { Framework } from "../framework.ts";
 import { createBufferInit, OPENGL_TO_WGPU_MATRIX } from "../utils.ts";
 
