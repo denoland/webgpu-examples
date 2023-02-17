@@ -25,6 +25,8 @@ export class Framework {
       throw new Error("no suitable adapter found");
     }
 
+    device.pushErrorScope("validation");
+
     return device;
   }
 
@@ -46,6 +48,12 @@ export class Framework {
     this.render(encoder, texture.createView());
     copyToBuffer(encoder, texture, outputBuffer, this.dimensions);
     this.device.queue.submit([encoder.finish()]);
+
+    const error = await this.device.popErrorScope();
+    if (error) {
+      throw error;
+    }
+
     await createPng(outputBuffer, this.dimensions);
   }
 }
