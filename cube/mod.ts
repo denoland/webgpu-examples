@@ -157,7 +157,6 @@ class Cube extends Framework {
       texels,
       {
         bytesPerRow: size,
-        rowsPerImage: 0,
       },
       textureExtent,
     );

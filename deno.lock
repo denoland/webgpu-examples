@@ -1,5 +1,9 @@
 {
-  "version": "2",
+  "version": "3",
+  "redirects": {
+    "https://crux.land/dds@0.0.1": "https://crux.land/api/get/2arQ9t.ts",
+    "https://crux.land/obj@0.0.2": "https://crux.land/api/get/7UjCQv.ts"
+  },
   "remote": {
     "https://crux.land/api/get/2arQ9t.ts": "8758ba7ac3376755e280b44783375e4148bd36a515779d4f74cb97ca3b483257",
     "https://crux.land/api/get/7UjCQv.ts": "96c235640ccabcf2a0737877aee3f5411b9f49aa681c18dcee0f627bf50db194",

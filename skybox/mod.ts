@@ -161,6 +161,7 @@ class Skybox extends Framework {
         frontFace: "cw",
       },
       depthStencil: {
+        depthWriteEnabled: false,
         format: DEPTH_FORMAT,
         depthCompare: "less-equal",
         stencilReadMask: 0,
@@ -217,7 +218,6 @@ class Skybox extends Framework {
       magFilter: "linear",
       minFilter: "linear",
       mipmapFilter: "linear",
-      maxAnisotropy: 0,
     });
 
     let skyboxFormat!: GPUTextureFormat;

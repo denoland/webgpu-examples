@@ -69,7 +69,6 @@ export function copyToBuffer(
     {
       buffer: outputBuffer,
       bytesPerRow: padded,
-      rowsPerImage: 0,
     },
     dimensions,
   );
