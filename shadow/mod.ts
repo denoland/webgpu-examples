@@ -315,7 +315,6 @@ class Shadow extends Framework {
       magFilter: "linear",
       minFilter: "linear",
       compare: "less-equal",
-      maxAnisotropy: 0,
     });
     const shadowTexture = this.device.createTexture({
       size: shadowSize,
