@@ -1,4 +1,5 @@
-import { copyToBuffer, createCapture, createPng, Dimensions } from "./utils.ts";
+import { copyToBuffer, createPng, Dimensions } from "./utils.ts";
+import { createCapture } from "std/webgpu/create_capture.ts";
 
 export class Framework {
   device: GPUDevice;
@@ -42,7 +43,8 @@ export class Framework {
     await this.init();
     const { texture, outputBuffer } = createCapture(
       this.device,
-      this.dimensions,
+      this.dimensions.width,
+      this.dimensions.height,
     );
     const encoder = this.device.createCommandEncoder();
     this.render(encoder, texture.createView());

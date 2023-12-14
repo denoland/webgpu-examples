@@ -1,9 +1,5 @@
-import {
-  copyToBuffer,
-  createCapture,
-  createPng,
-  Dimensions,
-} from "../utils.ts";
+import { copyToBuffer, createPng, Dimensions } from "../utils.ts";
+import { createCapture } from "std/webgpu/create_capture.ts";
 
 const dimensions: Dimensions = {
   width: 100,
@@ -18,7 +14,11 @@ if (!device) {
   Deno.exit(0);
 }
 
-const { texture, outputBuffer } = createCapture(device, dimensions);
+const { texture, outputBuffer } = createCapture(
+  device,
+  dimensions.width,
+  dimensions.height,
+);
 
 const encoder = device.createCommandEncoder();
 encoder.beginRenderPass({

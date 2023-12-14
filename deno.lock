@@ -39,6 +39,10 @@
     "https://deno.land/std@0.177.0/streams/reader_from_stream_reader.ts": "3fda9390ec8520c8a9ea2aba2579208b18880a7663d7a9feec8f193b7af14e41",
     "https://deno.land/std@0.177.0/streams/write_all.ts": "3b2e1ce44913f966348ce353d02fa5369e94115181037cd8b602510853ec3033",
     "https://deno.land/std@0.177.0/types.d.ts": "220ed56662a0bd393ba5d124aa6ae2ad36a00d2fcbc0e8666a65f4606aaa9784",
+    "https://deno.land/std@0.209.0/webgpu/create_capture.ts": "72ced703addbf5388bf5e52458676f9b437034efc61e248967f7cb2f1f3e5f32",
+    "https://deno.land/std@0.209.0/webgpu/describe_texture_format.ts": "6316b7a75274a4d54b3cedfc3e94047f4c445de5233671cec72b3ba5e95d43fd",
+    "https://deno.land/std@0.209.0/webgpu/row_padding.ts": "4e36857b49e6ef1137033d9ceb03a7228fb2e137268d6f904e77fd6efe3ee3a0",
+    "https://deno.land/std@0.209.0/webgpu/texture_with_data.ts": "3e082fecf3bf8c41c426e91cc0bfd5578b04d2863b0e7e86cd3710ed6b4d0b11",
     "https://deno.land/std@0.97.0/encoding/base64.ts": "eecae390f1f1d1cae6f6c6d732ede5276bf4b9cd29b1d281678c054dc5cc009e",
     "https://deno.land/x/byte_type@0.1.1/mod.ts": "7d7cac3aba4bbc8cec74af78cdf6b34c22e70a2c2329dcb2e278dd7153378656",
     "https://deno.land/x/byte_type@0.1.1/util.ts": "60b287013aad6c422777a66ae064a2dcf835e44e387619709093d5ba8ae9b825",
@@ -96,6 +100,10 @@
     "https://deno.land/x/outdent@v0.8.0/src/index.ts": "6dc3df4108d5d6fedcdb974844d321037ca81eaaa16be6073235ff3268841a22",
     "https://deno.land/x/pngs@0.1.1/mod.ts": "9dc8a7daed1497b94a77b68c954164a9f0b2a6f40866481bdfdbbaf015b5f764",
     "https://deno.land/x/pngs@0.1.1/wasm.js": "e3d4a8f293b267c9859a2164ca7b4603869bc92fe0d5ad4f109925858bce0c4c",
-    "https://deno.land/x/which@0.2.1/mod.ts": "2e076cb85aea9798662b355fb613d27eebcc78dfc8934ece4ae932f6303f6ca8"
+    "https://deno.land/x/which@0.2.1/mod.ts": "2e076cb85aea9798662b355fb613d27eebcc78dfc8934ece4ae932f6303f6ca8",
+    "https://raw.githubusercontent.com/denoland/deno_std/main/webgpu/create_capture.ts": "72ced703addbf5388bf5e52458676f9b437034efc61e248967f7cb2f1f3e5f32",
+    "https://raw.githubusercontent.com/denoland/deno_std/main/webgpu/describe_texture_format.ts": "6316b7a75274a4d54b3cedfc3e94047f4c445de5233671cec72b3ba5e95d43fd",
+    "https://raw.githubusercontent.com/denoland/deno_std/main/webgpu/row_padding.ts": "4e36857b49e6ef1137033d9ceb03a7228fb2e137268d6f904e77fd6efe3ee3a0",
+    "https://raw.githubusercontent.com/denoland/deno_std/main/webgpu/texture_with_data.ts": "3e082fecf3bf8c41c426e91cc0bfd5578b04d2863b0e7e86cd3710ed6b4d0b11"
   }
 }

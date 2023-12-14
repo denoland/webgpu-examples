@@ -1,9 +1,5 @@
-import {
-  copyToBuffer,
-  createCapture,
-  createPng,
-  Dimensions,
-} from "../utils.ts";
+import { copyToBuffer, createPng, Dimensions } from "../utils.ts";
+import { createCapture } from "std/webgpu/create_capture.ts";
 
 const dimensions: Dimensions = {
   width: 200,
@@ -57,7 +53,11 @@ const renderPipeline = device.createRenderPipeline({
   },
 });
 
-const { texture, outputBuffer } = createCapture(device, dimensions);
+const { texture, outputBuffer } = createCapture(
+  device,
+  dimensions.width,
+  dimensions.height,
+);
 
 const encoder = device.createCommandEncoder();
 const renderPass = encoder.beginRenderPass({
