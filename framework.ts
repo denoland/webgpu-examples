@@ -1,5 +1,5 @@
 import { copyToBuffer, createPng, Dimensions } from "./utils.ts";
-import { createCapture } from "std/webgpu/create_capture.ts";
+import { createCapture } from "std/webgpu";
 
 export class Framework {
   device: GPUDevice;
@@ -26,7 +26,9 @@ export class Framework {
       throw new Error("no suitable adapter found");
     }
 
-    device.pushErrorScope("validation");
+    device.addEventListener("uncaughterror", (e) => {
+      throw e.error;
+    });
 
     return device;
   }
@@ -50,11 +52,6 @@ export class Framework {
     this.render(encoder, texture.createView());
     copyToBuffer(encoder, texture, outputBuffer, this.dimensions);
     this.device.queue.submit([encoder.finish()]);
-
-    const error = await this.device.popErrorScope();
-    if (error) {
-      throw error;
-    }
 
     await createPng(outputBuffer, this.dimensions);
   }

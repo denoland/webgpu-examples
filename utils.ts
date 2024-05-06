@@ -1,4 +1,4 @@
-import { getRowPadding } from "std/webgpu/row_padding.ts";
+import { getRowPadding } from "std/webgpu";
 import * as gmath from "gmath";
 import * as png from "png";
 

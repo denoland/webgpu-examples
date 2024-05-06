@@ -2,7 +2,7 @@ import { Framework } from "../framework.ts";
 import * as gmath from "gmath";
 import { Dds } from "dds";
 import * as obj from "obj";
-import { createTextureWithData } from "std/webgpu/texture_with_data.ts";
+import { createTextureWithData } from "std/webgpu";
 import {
   createBufferInit,
   Dimensions,

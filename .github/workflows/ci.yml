@@ -19,3 +19,6 @@ jobs:
 
       - name: Lint
         run: deno lint
+
+      - name: Run
+        run: deno task run

@@ -1,5 +1,5 @@
 import { copyToBuffer, createPng, Dimensions } from "../utils.ts";
-import { createCapture } from "std/webgpu/create_capture.ts";
+import { createCapture } from "std/webgpu";
 
 const dimensions: Dimensions = {
   width: 100,
