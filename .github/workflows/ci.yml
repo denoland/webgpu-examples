@@ -16,9 +16,12 @@ jobs:
 
       - name: Check formatting
         run: deno fmt --check
+        shell: "bash"
 
       - name: Lint
         run: deno lint
+        shell: "bash"
 
       - name: Run
         run: deno task run
+        shell: "bash"
