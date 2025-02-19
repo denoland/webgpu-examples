@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   check:
-    runs-on: windows-latest
+    runs-on: macos-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -16,12 +16,9 @@ jobs:
 
       - name: Check formatting
         run: deno fmt --check
-        shell: "bash"
 
       - name: Lint
         run: deno lint
-        shell: "bash"
 
       - name: Run
         run: deno task run
-        shell: "bash"
