@@ -4,6 +4,7 @@ import { createCapture } from "std/webgpu";
 export class Framework {
   device: GPUDevice;
   dimensions: Dimensions;
+  errors: GPUError[] = [];
 
   static async getDevice({
     requiredFeatures,
@@ -26,16 +27,15 @@ export class Framework {
       throw new Error("no suitable adapter found");
     }
 
-    device.addEventListener("uncaughterror", (e) => {
-      throw e.error;
-    });
-
     return device;
   }
 
   constructor(dimensions: Dimensions, device: GPUDevice) {
     this.dimensions = dimensions;
     this.device = device;
+    device.addEventListener("uncapturederror", (e) => {
+      this.errors.push(e.error);
+    });
   }
 
   async init() {}
@@ -54,5 +54,9 @@ export class Framework {
     this.device.queue.submit([encoder.finish()]);
 
     await createPng(outputBuffer, this.dimensions);
+
+    if (this.errors.length > 0) {
+      throw new AggregateError(this.errors, "uncaught gpu errors");
+    }
   }
 }
